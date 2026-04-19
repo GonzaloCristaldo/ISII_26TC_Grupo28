@@ -7,7 +7,7 @@ import { AlertaExtendida } from '../../../modelos/tipos';
 import { obtenerMedicoDemoId } from '../../../persistencia/postgres/contextoDemo';
 
 /**
- * Capa de Presentación: Dashboard dinámico del médico. 
+ * Capa de Presentación: Dashboard dinámico del médico.
  */
 
 export default async function MedicoDashboardPage() {
