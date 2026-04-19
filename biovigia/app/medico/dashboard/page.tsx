@@ -4,7 +4,7 @@ import { connection } from 'next/server';
 import { crearServicioMedico } from '@/app/_lib/composition';
 import BotonLeido from './BotonLeido';
 import { AlertaExtendida } from '../../../modelos/tipos';
-import { obtenerMedicoDemoId } from '../../../persistencia/postgres/contextoDemo';
+import { obtenerMedicoDemoId } from '../../../persistencia/postgres/Demo';
 
 /**
  * Capa de Presentación: Dashboard dinámico del médico.
@@ -98,7 +98,7 @@ export default async function MedicoDashboardPage() {
           )}
         </div>
 
-        
+
       </div>
     </main>
   );

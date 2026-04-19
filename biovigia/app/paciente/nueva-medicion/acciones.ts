@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { crearServicioPaciente } from '@/app/_lib/composition';
 import { Medicion } from '../../../modelos/tipos';
-import { obtenerPacienteDemoId } from '../../../persistencia/postgres/contextoDemo';
+import { obtenerPacienteDemoId } from '../../../persistencia/postgres/Demo';
 
 /**
  * Server Action para registrar una medición.
