@@ -1,5 +1,6 @@
 import { RepositorioMediciones } from '../../modelos/repositorios/RepositorioMediciones';
 import { RepositorioAlertas } from '../../modelos/repositorios/RepositorioAlertas';
+import { RepositorioUmbrales } from '../../modelos/repositorios/RepositorioUmbrales';
 import { Medicion, Alerta } from '../../modelos/tipos';
 import { evaluarMedicion } from '../motorAlertas';
 
@@ -8,15 +9,16 @@ import { evaluarMedicion } from '../motorAlertas';
 
  */
 export class ServicioPaciente {
-
   constructor(
     private repoMediciones: RepositorioMediciones,
-    private repoAlertas: RepositorioAlertas
+    private repoAlertas: RepositorioAlertas,
+    private repoUmbrales?: RepositorioUmbrales,
   ) { }
 
   /**
    * Recibe datos de una medición capturada en la Capa de Presentación.
    */
+
   async registrarNuevaMedicion(datosMedicion: Medicion): Promise<{
     medicion: Medicion;
     alertaGenerada: boolean;
@@ -30,7 +32,10 @@ export class ServicioPaciente {
     }
 
     // 2. Evaluamos bajo reglas médicas
-    const estado = evaluarMedicion(medicionGuardada);
+    const umbral = this.repoUmbrales
+      ? await this.repoUmbrales.obtenerPorTipo(medicionGuardada.tipo_medicion)
+      : null;
+    const estado = evaluarMedicion(medicionGuardada, umbral);
 
     let alertaGenerada = false;
 
@@ -40,17 +45,17 @@ export class ServicioPaciente {
         medicion_id: medicionGuardada.id,
         estado_alerta: estado,
         leido_por_medico: false,
-        fecha: new Date()
+        fecha: new Date(),
       };
 
       await this.repoAlertas.guardar(nuevaAlerta);
       alertaGenerada = true;
     }
 
-    // 4. Se devuelve un resultado
+    // 4. Se devuelve un resultado (a la capa de presentacion)
     return {
       medicion: medicionGuardada,
-      alertaGenerada
+      alertaGenerada,
     };
   }
 }

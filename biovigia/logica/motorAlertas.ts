@@ -8,7 +8,7 @@ import { Medicion, TipoEstadoMedicion } from '../modelos/tipos';
  * en advertencia o en estado crítico.
  */
 
-// Simulado hasta copnectar pg4admin. 
+// Simulado hasta copnectar pg4admin (tabla para umbrales). 
 const UMBRALES_SIMULADOS = {
   PresionArterial: {
     minimo: 90,
@@ -24,7 +24,7 @@ const UMBRALES_SIMULADOS = {
 
 export function evaluarMedicion(medicion: Medicion): TipoEstadoMedicion {
   const umbral = UMBRALES_SIMULADOS[medicion.tipo_medicion];
-  
+
   if (!umbral) {
     return 'Normal';
   }
