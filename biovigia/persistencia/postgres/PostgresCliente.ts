@@ -1,8 +1,8 @@
 import { Pool } from 'pg';
 
 /**
- * Cliente nativo de PostgreSQL (EnterpriseDB local).
- * Utiliza variables de entorno para conectarse de forma segura.
+ * Cliente de PostgreSQL (EnterpriseDB local/pgAdmin4).
+ * Utiliza variables de entorno para conectarse. (.env)
  */
 export const pool = new Pool({
   user: process.env.POSTGRES_USER,
@@ -12,10 +12,10 @@ export const pool = new Pool({
   database: process.env.POSTGRES_DB,
   // Ojo, si usamos EnterpriseDB local, 
   // ssl segun SOflow deberia estar en false.
-  ssl: false 
+  ssl: false
 });
 
-// Event listener para detectar fallos imprevistos en conexiones inactivas
+// Event listener para detectar fallos de golpe en las conexiones.
 pool.on('error', (err) => {
   console.error('Error imprevisto en cliente de PostgreSQL', err);
 });
