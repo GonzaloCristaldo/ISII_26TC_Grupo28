@@ -1,25 +1,24 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { crearServicioPaciente } from '@/app/_lib/composition';
-import { Medicion } from '../../../modelos/tipos';
-import { obtenerPacienteDemoId } from '../../../persistencia/postgres/Demo';
+import { crearServicioPaciente } from '@/app/lib/composition';
+import { requerirPaciente } from '@/app/lib/session';
+import { Medicion } from '@/modelos/tipos';
 
 /**
- * Server Action para registrar una medición.
+ * Server Action para registrar una medicion p/ paciente con sesion iniciada.
  */
 export async function guardarMedicionAccion(formData: FormData) {
+  const sesion = await requerirPaciente();
   const tipo_medicion = formData.get('tipo_medicion') as 'PresionArterial' | 'Glucosa';
   const valor = Number(formData.get('valor'));
 
   if (!tipo_medicion || Number.isNaN(valor)) {
-    throw new Error('La medición recibida es inválida.');
+    throw new Error('La medicion recibida es invalida.');
   }
 
-  const pacienteId = await obtenerPacienteDemoId();
-
   const nuevaMedicion: Medicion = {
-    paciente_id: pacienteId,
+    paciente_id: sesion.pacienteId!,
     tipo_medicion,
     valor,
     fecha: new Date(),
