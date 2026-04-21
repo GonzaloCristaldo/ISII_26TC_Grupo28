@@ -3,6 +3,7 @@ import { RepositorioAlertas } from '../../modelos/repositorios/RepositorioAlerta
 import { RepositorioUmbrales } from '../../modelos/repositorios/RepositorioUmbrales';
 import { Medicion, Alerta } from '../../modelos/tipos';
 import { evaluarMedicion } from '../motorAlertas';
+import { validarLimitesBiologicos } from '../validadorMediciones';
 
 /**
  * Servicio central del Paciente.
@@ -24,7 +25,10 @@ export class ServicioPaciente {
     alertaGenerada: boolean;
   }> {
 
-    // 1. Guarda la medición usando el contrato 
+    // 1. Validar que la medición sea físicamente posible para un ser humano
+    validarLimitesBiologicos(datosMedicion.tipo_medicion, datosMedicion.valor);
+
+    // 2. Guarda la medición usando el contrato 
     const medicionGuardada = await this.repoMediciones.guardar(datosMedicion);
 
     if (!medicionGuardada.id) {

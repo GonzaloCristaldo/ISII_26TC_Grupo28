@@ -9,12 +9,27 @@ import { descartarAlertaAccion } from './accionesMedico';
  */
 export default function BotonLeido({ alertaId }: { alertaId: string }) {
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const handleDescartar = async () => {
     setLoading(true);
-    await descartarAlertaAccion(alertaId);
-    setLoading(false);
+    try {
+      await descartarAlertaAccion(alertaId);
+      setSuccess(true);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (success) {
+    return (
+      <button disabled className="px-4 py-2 text-sm font-semibold rounded-lg border transition bg-teal-50 text-teal-700 border-teal-200">
+        Atendido ✓
+      </button>
+    );
+  }
 
   return (
     <button

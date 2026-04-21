@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { guardarMedicionAccion } from './acciones';
+import FormularioMedicion from './FormularioMedicion';
 import { cerrarSesionAccion } from '@/app/auth/acciones';
 import { requerirPaciente } from '@/app/lib/session';
 
@@ -46,41 +46,7 @@ export default async function NuevaMedicionPage() {
             La medicion se guarda asociada a usted.
           </p>
 
-          <form action={guardarMedicionAccion} className="mt-8 space-y-6">
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">
-                Tipo de medicion
-              </label>
-              <select
-                name="tipo_medicion"
-                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 transition focus:border-teal-600 focus:outline-none"
-                required
-              >
-                <option value="PresionArterial">Presion arterial (sistolica)</option>
-                <option value="Glucosa">Glucosa en sangre</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">
-                Valor registrado
-              </label>
-              <input
-                type="number"
-                name="valor"
-                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 transition focus:border-teal-600 focus:outline-none"
-                placeholder="Ej. 110"
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="w-full rounded-xl bg-teal-700 px-4 py-3 font-semibold text-white transition hover:bg-teal-800"
-            >
-              Registrar y evaluar
-            </button>
-          </form>
+          <FormularioMedicion />
         </section>
       </div>
     </main>
