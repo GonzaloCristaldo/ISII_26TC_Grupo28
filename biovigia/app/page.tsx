@@ -29,7 +29,7 @@ export default async function Home() {
                     href={accesoPrincipal}
                     className="rounded-xl bg-slate-900 px-6 py-3 font-semibold text-white transition hover:bg-slate-800"
                   >
-                    Continuar como {sesion.rol}
+                    {sesion.rol === 'medico' ? 'Ver alertas pendientes' : 'Registrar nueva medicion'}
                   </Link>
                   <form action={cerrarSesionAccion}>
                     <button
