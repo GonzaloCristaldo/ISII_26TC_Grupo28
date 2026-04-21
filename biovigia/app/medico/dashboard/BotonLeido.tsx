@@ -20,11 +20,10 @@ export default function BotonLeido({ alertaId }: { alertaId: string }) {
     <button
       onClick={handleDescartar}
       disabled={loading}
-      className={`px-4 py-2 text-sm font-semibold rounded-lg border transition ${
-        loading 
-          ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-          : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
-      }`}
+      className={`px-4 py-2 text-sm font-semibold rounded-lg border transition ${loading
+        ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+        : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+        }`}
     >
       {loading ? 'Procesando...' : 'Atendido'}
     </button>

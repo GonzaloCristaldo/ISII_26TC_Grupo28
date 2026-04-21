@@ -1,104 +1,107 @@
-import React from 'react';
 import Link from 'next/link';
-import { connection } from 'next/server';
-import { crearServicioMedico } from '@/app/_lib/composition';
+import { crearServicioMedico } from '@/app/lib/composition';
+import { cerrarSesionAccion } from '@/app/auth/acciones';
+import { requerirMedico } from '@/app/lib/session';
 import BotonLeido from './BotonLeido';
-import { AlertaExtendida } from '../../../modelos/tipos';
-import { obtenerMedicoDemoId } from '../../../persistencia/postgres/Demo';
+import { AlertaExtendida } from '@/modelos/tipos';
 
 /**
- * Capa de Presentación: Dashboard dinámico del médico.
+ * Capa de Presentación: Dashboard del medico con sesion iniciada.
  */
-
 export default async function MedicoDashboardPage() {
-  await connection();
+  const sesion = await requerirMedico();
 
   let alertasPendientes: AlertaExtendida[] = [];
   let mensajeError: string | null = null;
 
   try {
-    const medicoId = await obtenerMedicoDemoId();
     const servicioMedico = crearServicioMedico();
-
-    alertasPendientes = await servicioMedico.revisarAlertasPendientes(medicoId);
+    alertasPendientes = await servicioMedico.revisarAlertasPendientes(sesion.medicoId!);
   } catch (error) {
     mensajeError =
       error instanceof Error
         ? error.message
-        : 'No se pudieron obtener las alertas para el médico.';
+        : 'No se pudieron obtener las alertas para el medico autenticado.';
     console.error('Fallo obteniendo las alertas:', error);
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 flex flex-col p-8">
-      <div className="max-w-5xl mx-auto w-full">
-        {/* Cabecera */}
-        <div className="flex justify-between items-center mb-10">
+    <main className="min-h-screen bg-slate-100 px-4 py-8">
+      <div className="mx-auto max-w-5xl">
+        <div className="mb-10 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-extrabold text-blue-900 mb-2">Panel Clínico</h1>
-            <p className="text-gray-500">Alertas y Notificaciones Recientes</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-cyan-700">
+              Panel medico
+            </p>
+            <h1 className="mt-2 text-3xl font-semibold text-slate-900">{sesion.nombreCompleto}</h1>
+            <p className="mt-2 text-slate-500">Alertas pendientes de tus pacientes asignados.</p>
           </div>
-          <Link href="/" className="px-5 py-2text-sm text-gray-600 hover:text-blue-600 underline">
-            Volver al Inicio
-          </Link>
+
+          <div className="flex gap-3">
+            <Link
+              href="/"
+              className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-white"
+            >
+              Volver al inicio
+            </Link>
+            <form action={cerrarSesionAccion}>
+              <button
+                type="submit"
+                className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+              >
+                Cerrar sesion
+              </button>
+            </form>
+          </div>
         </div>
 
-        {/* Tarjetas de Alertas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {mensajeError ? (
-            <div className="col-span-full rounded-2xl border border-red-200 bg-red-50 px-6 py-5 text-red-800">
-              <h2 className="mb-2 text-lg font-semibold">No se pudo cargar el panel clínico</h2>
+            <div className="col-span-full rounded-2xl border border-rose-200 bg-rose-50 px-6 py-5 text-rose-800">
+              <h2 className="mb-2 text-lg font-semibold">No se pudo cargar el panel clinico</h2>
               <p className="text-sm">{mensajeError}</p>
             </div>
           ) : alertasPendientes.length === 0 ? (
-            <div className="col-span-full py-16 text-center text-gray-400 bg-white rounded-2xl border border-dashed border-gray-300">
-              <svg className="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+            <div className="col-span-full rounded-3xl border border-dashed border-slate-300 bg-white py-16 text-center text-slate-400">
               No hay alertas pendientes para revisar.
             </div>
           ) : (
             alertasPendientes.map((alerta) => (
-              <div
+              <article
                 key={alerta.id}
-                className={`bg-white rounded-2xl shadow-sm border-l-8 p-6 flex flex-col justify-between ${
-                  alerta.estado_alerta === 'Critico' ? 'border-red-500 bg-red-50' : 'border-yellow-400'
-                }`}
+                className={`rounded-3xl border-l-8 p-6 shadow-sm ${alerta.estado_alerta === 'Critico'
+                  ? 'border-rose-500 bg-rose-50'
+                  : 'border-amber-400 bg-white'
+                  }`}
               >
-                <div>
-                  <div className="flex justify-between items-start mb-4">
-                    <h2 className="text-xl font-bold text-gray-800">{alerta.paciente_nombre}</h2>
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
-                        alerta.estado_alerta === 'Critico' 
-                          ? 'bg-red-200 text-red-800' 
-                          : 'bg-yellow-100 text-yellow-800'
-                      }`}
-                    >
-                      {alerta.estado_alerta}
-                    </span>
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h2 className="text-xl font-semibold text-slate-900">{alerta.paciente_nombre}</h2>
+                    <p className="mt-1 text-sm text-slate-600">
+                      {alerta.medicion_tipo}: {alerta.medicion_valor}
+                    </p>
                   </div>
-
-                  <p className="text-sm text-gray-600 mb-2">
-                    <span className="font-semibold">{alerta.medicion_tipo}:</span> {alerta.medicion_valor}
-                  </p>
-                  
-                  <p className="text-xs text-gray-400 mt-4">
-                    Registrado el {alerta.medicion_fecha.toLocaleString()}
-                  </p>
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${alerta.estado_alerta === 'Critico'
+                      ? 'bg-rose-200 text-rose-800'
+                      : 'bg-amber-100 text-amber-800'
+                      }`}
+                  >
+                    {alerta.estado_alerta}
+                  </span>
                 </div>
 
-                <div className="mt-6 border-t border-gray-100 pt-4 flex justify-end">
+                <p className="mt-5 text-xs text-slate-500">
+                  Registrado el {alerta.medicion_fecha.toLocaleString()}
+                </p>
+
+                <div className="mt-6 border-t border-slate-200 pt-4 text-right">
                   <BotonLeido alertaId={alerta.id!} />
                 </div>
-              </div>
+              </article>
             ))
-
-
           )}
         </div>
-
-
       </div>
     </main>
   );
