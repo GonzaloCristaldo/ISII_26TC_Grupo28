@@ -1,5 +1,5 @@
 /**
- * en espera para Supabase.
+ * En espera para Supabase.
  * Se mantiene para poder reactivar supa más adelante
  * sin cambiar la lógica de negocio ni la presentación.
  */

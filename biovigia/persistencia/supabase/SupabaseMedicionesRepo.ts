@@ -3,11 +3,11 @@ import { Medicion } from '../../modelos/tipos';
 import { supabase } from './SupabaseCliente';
 
 /**
- * repositorio de Mediciones usando Supabase.
+ * Repositorio de Mediciones usando Supabase.
  * (capa de persistencia).
  */
 export class SupabaseMedicionesRepo implements RepositorioMediciones {
-  
+
   async guardar(m: Medicion): Promise<Medicion> {
     // transformamos al formato de base de datos si fuera necesario
     const datosASubir = {
@@ -21,7 +21,7 @@ export class SupabaseMedicionesRepo implements RepositorioMediciones {
     const { error } = await supabase
       .from('mediciones')
       .insert([datosASubir]);
-      //  .select() para obtener el ID en caso real
+    //  .select() para obtener el ID en caso real
 
     if (error) {
       throw new Error(`Error en persistencia (Supabase): ${error.message}`);
@@ -47,7 +47,7 @@ export class SupabaseMedicionesRepo implements RepositorioMediciones {
         fecha: string;
       }>('*');
     if (error) throw new Error(error.message);
-    
+
     return data.map((medicion) => ({
       id: medicion.id,
       paciente_id: medicion.paciente_id,

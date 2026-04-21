@@ -6,13 +6,13 @@ import { supabase } from './SupabaseCliente';
  * repositorio de Alertas para Supabase.
  */
 export class SupabaseAlertasRepo implements RepositorioAlertas {
-  
+
   async guardar(a: Alerta): Promise<Alerta> {
     const datos = {
-        medicion_id: a.medicion_id,
-        estado_alerta: a.estado_alerta,
-        leido_por_medico: a.leido_por_medico,
-        fecha: new Date().toISOString()
+      medicion_id: a.medicion_id,
+      estado_alerta: a.estado_alerta,
+      leido_por_medico: a.leido_por_medico,
+      fecha: new Date().toISOString()
     };
 
     const { error } = await supabase.from('alertas').insert([datos]);
@@ -32,8 +32,9 @@ export class SupabaseAlertasRepo implements RepositorioAlertas {
     throw new Error('Metodo no implementado en mock Supabase');
   }
 
-  async marcarComoLeida(alertaId: string): Promise<void> {
+  async marcarComoLeida(alertaId: string, medicoId: string): Promise<void> {
     void alertaId;
+    void medicoId;
     throw new Error('Metodo no implementado en mock Supabase');
   }
 }
