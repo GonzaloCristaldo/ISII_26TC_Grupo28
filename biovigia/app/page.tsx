@@ -1,30 +1,78 @@
-import Link from "next/link";
+import Link from 'next/link';
+import { cerrarSesionAccion } from '@/app/auth/acciones';
+import { obtenerSesionActual } from '@/app/lib/session';
 
-export default function Home() {
+export default async function Home() {
+  const sesion = await obtenerSesionActual();
+  const accesoPrincipal =
+    sesion?.rol === 'medico' ? '/medico/dashboard' : '/paciente/nueva-medicion';
+
   return (
-    <main className="min-h-screen bg-white flex flex-col items-center justify-center p-4">
-      <div className="text-center">
-        <h1 className="text-5xl font-extrabold text-blue-900 mb-6 tracking-tight">
-          BioVigía
-        </h1>
-        <p className="text-xl text-gray-600 mb-8 max-w-lg mx-auto">
-          Sistema de Tele-monitoreo Médico. Panel de acceso principal.
-        </p>
+    <main className="min-h-screen bg-[linear-gradient(135deg,#f8fafc_0%,#e0f2fe_45%,#ecfeff_100%)] px-4 py-10">
+      <div className="mx-auto flex min-h-[85vh] max-w-6xl items-center">
+        <section className="grid w-full gap-8 rounded-[2rem] bg-white/80 p-8 shadow-2xl backdrop-blur lg:grid-cols-[1.1fr_0.9fr] lg:p-12">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.4em] text-cyan-700">
+              Telemonitoreo clinico
+            </p>
+            <h1 className="mt-4 max-w-2xl text-5xl font-semibold tracking-tight text-slate-900">
+              BioVigia
+            </h1>
+            <p className="mt-6 max-w-xl text-lg leading-8 text-slate-600">
+              Organiza pacientes, mediciones y alertas por paciente.
+            </p>
 
-        <div className="flex gap-4 justify-center">
-          <Link
-            href="/paciente/nueva-medicion"
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg font-medium transition-all hover:scale-105"
-          >
-            Ingreso Paciente
-          </Link>
-          <Link
-            href="/medico/dashboard"
-            className="px-6 py-3 bg-white border border-gray-300 hover:bg-gray-50 text-gray-800 rounded-xl shadow-sm font-medium transition-all hover:scale-105"
-          >
-            Panel Médico
-          </Link>
-        </div>
+            <div className="mt-8 flex flex-wrap gap-4">
+              {sesion ? (
+                <>
+                  <Link
+                    href={accesoPrincipal}
+                    className="rounded-xl bg-slate-900 px-6 py-3 font-semibold text-white transition hover:bg-slate-800"
+                  >
+                    Continuar como {sesion.rol}
+                  </Link>
+                  <form action={cerrarSesionAccion}>
+                    <button
+                      type="submit"
+                      className="rounded-xl border border-slate-300 px-6 py-3 font-semibold text-slate-700 transition hover:bg-slate-100"
+                    >
+                      Cerrar sesion
+                    </button>
+                  </form>
+                </>
+              ) : (
+                <Link
+                  href="/login"
+                  className="rounded-xl bg-slate-900 px-6 py-3 font-semibold text-white transition hover:bg-slate-800"
+                >
+                  Iniciar sesion
+                </Link>
+              )}
+            </div>
+          </div>
+
+          <aside className="rounded-[1.75rem] bg-slate-950 p-8 text-slate-100">
+            <p className="text-sm uppercase tracking-[0.3em] text-cyan-300">Estado de acceso</p>
+            {sesion ? (
+              <>
+                <h2 className="mt-5 text-3xl font-semibold">{sesion.nombreCompleto}</h2>
+                <p className="mt-2 text-slate-300">Usuario: {sesion.username}</p>
+                <p className="mt-1 text-slate-300">Rol: {sesion.rol}</p>
+                <p className="mt-6 text-sm leading-7 text-slate-400">
+                  Puede visualizar sus mediciones y alertas.
+                </p>
+              </>
+            ) : (
+              <>
+                <h2 className="mt-5 text-3xl font-semibold">Sesion no iniciada</h2>
+                <p className="mt-4 text-sm leading-7 text-slate-400">
+                  Ingresa desde la pagina de login para usar el panel de medico o el formulario de
+                  paciente con autorizacion real.
+                </p>
+              </>
+            )}
+          </aside>
+        </section>
       </div>
     </main>
   );
