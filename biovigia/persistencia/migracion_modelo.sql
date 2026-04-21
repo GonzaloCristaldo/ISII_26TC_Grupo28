@@ -36,25 +36,46 @@ INSERT INTO tipos_medicion (id, nombre, unidad) VALUES
 ON CONFLICT (nombre) DO NOTHING;
 
 ALTER TABLE mediciones ADD COLUMN IF NOT EXISTS tipo_medicion_id UUID;
-UPDATE mediciones
-SET tipo_medicion_id = tm.id
-FROM tipos_medicion tm
-WHERE tm.nombre = mediciones.tipo_medicion::text
-  AND mediciones.tipo_medicion_id IS NULL;
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'mediciones' AND column_name = 'tipo_medicion') THEN
+    EXECUTE '
+      UPDATE mediciones
+      SET tipo_medicion_id = tm.id
+      FROM tipos_medicion tm
+      WHERE tm.nombre = mediciones.tipo_medicion::text
+        AND mediciones.tipo_medicion_id IS NULL
+    ';
+  END IF;
+END $$;
 
 ALTER TABLE alertas ADD COLUMN IF NOT EXISTS estado_alerta_id UUID;
-UPDATE alertas
-SET estado_alerta_id = ea.id
-FROM estados_alerta ea
-WHERE ea.descripcion = alertas.estado_alerta::text
-  AND alertas.estado_alerta_id IS NULL;
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'alertas' AND column_name = 'estado_alerta') THEN
+    EXECUTE '
+      UPDATE alertas
+      SET estado_alerta_id = ea.id
+      FROM estados_alerta ea
+      WHERE ea.descripcion = alertas.estado_alerta::text
+        AND alertas.estado_alerta_id IS NULL
+    ';
+  END IF;
+END $$;
 
 ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS rol_id UUID;
-UPDATE usuarios
-SET rol_id = r.id
-FROM roles r
-WHERE r.nombre = usuarios.rol::text
-  AND usuarios.rol_id IS NULL;
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'usuarios' AND column_name = 'rol') THEN
+    EXECUTE '
+      UPDATE usuarios
+      SET rol_id = r.id
+      FROM roles r
+      WHERE r.nombre = usuarios.rol::text
+        AND usuarios.rol_id IS NULL
+    ';
+  END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS usuario_medico (
     usuario_id UUID PRIMARY KEY,
@@ -74,17 +95,28 @@ CREATE TABLE IF NOT EXISTS usuario_paciente (
       FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
 );
 
-INSERT INTO usuario_medico (usuario_id, medico_id)
-SELECT id, medico_id
-FROM usuarios
-WHERE medico_id IS NOT NULL
-ON CONFLICT (usuario_id) DO NOTHING;
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'usuarios' AND column_name = 'medico_id') THEN
+    EXECUTE '
+      INSERT INTO usuario_medico (usuario_id, medico_id)
+      SELECT id, medico_id
+      FROM usuarios
+      WHERE medico_id IS NOT NULL
+      ON CONFLICT (usuario_id) DO NOTHING
+    ';
+  END IF;
 
-INSERT INTO usuario_paciente (usuario_id, paciente_id)
-SELECT id, paciente_id
-FROM usuarios
-WHERE paciente_id IS NOT NULL
-ON CONFLICT (usuario_id) DO NOTHING;
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'usuarios' AND column_name = 'paciente_id') THEN
+    EXECUTE '
+      INSERT INTO usuario_paciente (usuario_id, paciente_id)
+      SELECT id, paciente_id
+      FROM usuarios
+      WHERE paciente_id IS NOT NULL
+      ON CONFLICT (usuario_id) DO NOTHING
+    ';
+  END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS umbrales_nuevos (
     tipo_medicion_id UUID PRIMARY KEY,
@@ -101,11 +133,25 @@ CREATE TABLE IF NOT EXISTS umbrales_nuevos (
       )
 );
 
-INSERT INTO umbrales_nuevos (tipo_medicion_id, valor_minimo_normal, valor_maximo_normal, valor_critico)
-SELECT tm.id, u.valor_minimo_normal, u.valor_maximo_normal, u.valor_critico
-FROM umbrales u
-JOIN tipos_medicion tm ON tm.nombre = u.tipo_medicion::text
-ON CONFLICT (tipo_medicion_id) DO NOTHING;
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'umbrales' AND column_name = 'tipo_medicion') THEN
+    EXECUTE '
+      INSERT INTO umbrales_nuevos (tipo_medicion_id, valor_minimo_normal, valor_maximo_normal, valor_critico)
+      SELECT tm.id, u.valor_minimo_normal, u.valor_maximo_normal, u.valor_critico
+      FROM umbrales u
+      JOIN tipos_medicion tm ON tm.nombre = u.tipo_medicion::text
+      ON CONFLICT (tipo_medicion_id) DO NOTHING
+    ';
+  ELSIF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'umbrales' AND column_name = 'tipo_medicion_id') THEN
+    EXECUTE '
+      INSERT INTO umbrales_nuevos (tipo_medicion_id, valor_minimo_normal, valor_maximo_normal, valor_critico)
+      SELECT u.tipo_medicion_id, u.valor_minimo_normal, u.valor_maximo_normal, u.valor_critico
+      FROM umbrales u
+      ON CONFLICT (tipo_medicion_id) DO NOTHING
+    ';
+  END IF;
+END $$;
 
 DROP TABLE IF EXISTS umbrales;
 ALTER TABLE umbrales_nuevos RENAME TO umbrales;
@@ -119,21 +165,26 @@ ALTER TABLE alertas
 ALTER TABLE usuarios
   ALTER COLUMN rol_id SET NOT NULL;
 
+ALTER TABLE mediciones DROP CONSTRAINT IF EXISTS fk_medicion_tipo_migrado;
 ALTER TABLE mediciones
   ADD CONSTRAINT fk_medicion_tipo_migrado
   FOREIGN KEY (tipo_medicion_id) REFERENCES tipos_medicion(id);
 
+ALTER TABLE alertas DROP CONSTRAINT IF EXISTS fk_alerta_estado_migrado;
 ALTER TABLE alertas
   ADD CONSTRAINT fk_alerta_estado_migrado
   FOREIGN KEY (estado_alerta_id) REFERENCES estados_alerta(id);
 
+ALTER TABLE usuarios DROP CONSTRAINT IF EXISTS fk_usuario_rol_migrado;
 ALTER TABLE usuarios
   ADD CONSTRAINT fk_usuario_rol_migrado
   FOREIGN KEY (rol_id) REFERENCES roles(id);
 
+ALTER TABLE alertas DROP CONSTRAINT IF EXISTS uq_alerta_medicion;
 ALTER TABLE alertas
   ADD CONSTRAINT uq_alerta_medicion UNIQUE (medicion_id);
 
+ALTER TABLE mediciones DROP CONSTRAINT IF EXISTS ck_medicion_valor_positivo;
 ALTER TABLE mediciones
   ADD CONSTRAINT ck_medicion_valor_positivo CHECK (valor > 0);
 
