@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { registrarMedicoAccion, registrarPacienteAccion } from '@/app/auth/acciones';
+import { registrarMedicoAccion, registrarPacienteAccion } from '@/app/auth/accionesAutenticacion';
 import { obtenerSesionActual } from '@/app/lib/session';
 import { listarMedicosRegistrables } from '@/persistencia/postgres/usuariosAuth';
 

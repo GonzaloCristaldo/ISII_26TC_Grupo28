@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-, "app/_lib/composition"  ],
+, "app/_lib/crearDependencias"  ],
   "exclude": ["node_modules"]
 }

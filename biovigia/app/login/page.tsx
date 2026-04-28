@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { iniciarSesionAccion } from '@/app/auth/acciones';
+import { iniciarSesionAccion } from '@/app/auth/accionesAutenticacion';
 import { obtenerSesionActual } from '@/app/lib/session';
 
 type LoginPageProps = {

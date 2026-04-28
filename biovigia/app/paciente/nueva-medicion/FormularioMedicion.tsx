@@ -2,7 +2,7 @@
 
 import { useActionState, useRef, ElementRef } from 'react';
 import { useFormStatus } from 'react-dom';
-import { guardarMedicionAccion } from './acciones';
+import { guardarMedicionAccion } from './guardarMedicionAccion';
 
 const initialState = { message: '', type: '' };
 

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { cerrarSesionAccion } from '@/app/auth/acciones';
+import { cerrarSesionAccion } from '@/app/auth/accionesAutenticacion';
 import { obtenerSesionActual } from '@/app/lib/session';
 
 export default async function Home() {
@@ -67,7 +67,7 @@ export default async function Home() {
                 <h2 className="mt-5 text-3xl font-semibold">Sesion no iniciada</h2>
                 <p className="mt-4 text-sm leading-7 text-slate-400">
                   Ingresa desde la pagina de login para usar el panel de medico o el formulario de
-                  paciente con autorizacion real.
+                  paciente.
                 </p>
               </>
             )}

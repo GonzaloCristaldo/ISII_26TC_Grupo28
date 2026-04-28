@@ -2,14 +2,14 @@ import { RepositorioMediciones } from '../../modelos/repositorios/RepositorioMed
 import { RepositorioAlertas } from '../../modelos/repositorios/RepositorioAlertas';
 import { RepositorioUmbrales } from '../../modelos/repositorios/RepositorioUmbrales';
 import { Medicion, Alerta } from '../../modelos/tipos';
-import { evaluarMedicion } from '../motorAlertas';
+import { evaluarMedicion } from '../evaluadorEstadoMedicion';
 import { validarLimitesBiologicos } from '../validadorMediciones';
 
 /**
- * Servicio central del Paciente.
+ * Gestor del registro de mediciones del Paciente.
 
  */
-export class ServicioPaciente {
+export class GestorRegistroMedicion {
   constructor(
     private repoMediciones: RepositorioMediciones,
     private repoAlertas: RepositorioAlertas,

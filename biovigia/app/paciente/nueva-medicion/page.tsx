@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import FormularioMedicion from './FormularioMedicion';
-import { cerrarSesionAccion } from '@/app/auth/acciones';
+import { cerrarSesionAccion } from '@/app/auth/accionesAutenticacion';
 import { requerirPaciente } from '@/app/lib/session';
 
 /**

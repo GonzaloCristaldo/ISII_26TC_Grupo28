@@ -2,11 +2,11 @@ import { RepositorioAlertas } from '../../modelos/repositorios/RepositorioAlerta
 import { AlertaExtendida } from '../../modelos/tipos';
 
 /**
- * Servicio del flujo del Médico.
+ * Gestor del flujo del Médico.
  * Lista alertas y se puede poner como como leídas/atendidas.
  */
 
-export class ServicioMedico {
+export class GestorAlertasMedico {
   constructor(private repoAlertas: RepositorioAlertas) { }
 
   /**

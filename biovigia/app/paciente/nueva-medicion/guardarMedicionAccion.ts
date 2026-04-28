@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { crearServicioPaciente } from '@/app/lib/composition';
+import { crearGestorRegistroMedicion } from '@/app/lib/crearDependencias';
 import { requerirPaciente } from '@/app/lib/session';
 import { Medicion } from '@/modelos/tipos';
 
@@ -25,7 +25,7 @@ export async function guardarMedicionAccion(prevState: any, formData: FormData) 
       fecha: new Date(),
     };
 
-    const servicio = crearServicioPaciente();
+    const servicio = crearGestorRegistroMedicion();
 
     await servicio.registrarNuevaMedicion(nuevaMedicion);
 

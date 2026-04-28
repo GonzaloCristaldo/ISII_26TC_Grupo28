@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import { crearServicioMedico } from '@/app/lib/composition';
-import { cerrarSesionAccion } from '@/app/auth/acciones';
+import { crearGestorAlertasMedico } from '@/app/lib/crearDependencias';
+import { cerrarSesionAccion } from '@/app/auth/accionesAutenticacion';
 import { requerirMedico } from '@/app/lib/session';
 import BotonLeido from './BotonLeido';
 import { AlertaExtendida } from '@/modelos/tipos';
@@ -15,8 +15,8 @@ export default async function MedicoDashboardPage() {
   let mensajeError: string | null = null;
 
   try {
-    const servicioMedico = crearServicioMedico();
-    alertasPendientes = await servicioMedico.revisarAlertasPendientes(sesion.medicoId!);
+    const GestorAlertasMedico = crearGestorAlertasMedico();
+    alertasPendientes = await GestorAlertasMedico.revisarAlertasPendientes(sesion.medicoId!);
   } catch (error) {
     mensajeError =
       error instanceof Error
