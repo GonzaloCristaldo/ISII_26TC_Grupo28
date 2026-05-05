@@ -25,8 +25,11 @@ export default function BotonLeido({ alertaId }: { alertaId: string }) {
 
   if (success) {
     return (
-      <button disabled className="px-4 py-2 text-sm font-semibold rounded-lg border transition bg-teal-50 text-teal-700 border-teal-200">
-        Atendido ✓
+      <button
+        disabled
+        className="rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800 transition"
+      >
+        Atencion registrada
       </button>
     );
   }
@@ -35,12 +38,13 @@ export default function BotonLeido({ alertaId }: { alertaId: string }) {
     <button
       onClick={handleDescartar}
       disabled={loading}
-      className={`px-4 py-2 text-sm font-semibold rounded-lg border transition ${loading
-        ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-        : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
-        }`}
+      className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
+        loading
+          ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400'
+          : 'border-slate-900 bg-slate-900 text-white hover:bg-slate-800'
+      }`}
     >
-      {loading ? 'Procesando...' : 'Atendido'}
+      {loading ? 'Registrando...' : 'Atendido'}
     </button>
   );
 }
