@@ -1,9 +1,11 @@
 import { RepositorioAlertas } from '@/modelos/repositorios/RepositorioAlertas';
 import { RepositorioMediciones } from '@/modelos/repositorios/RepositorioMediciones';
 import { RepositorioUmbrales } from '@/modelos/repositorios/RepositorioUmbrales';
+import { RepositorioUsuariosAuth } from '@/modelos/repositorios/RepositorioUsuariosAuth';
 import { PostgresAlertasRepo } from '@/persistencia/postgres/PostgresAlertasRepo';
 import { PostgresMedicionesRepo } from '@/persistencia/postgres/PostgresMedicionesRepo';
 import { PostgresUmbralesRepo } from '@/persistencia/postgres/PostgresUmbralesRepo';
+import { PostgresUsuariosAuthRepo } from '@/persistencia/postgres/PostgresUsuariosAuthRepo';
 import { SupabaseAlertasRepo } from '@/persistencia/supabase/SupabaseAlertasRepo';
 import { SupabaseMedicionesRepo } from '@/persistencia/supabase/SupabaseMedicionesRepo';
 import { SupabaseUmbralesRepo } from '@/persistencia/supabase/SupabaseUmbralesRepo';
@@ -60,5 +62,14 @@ export function crearRepositorioUmbrales(): RepositorioUmbrales {
       return new PostgresUmbralesRepo();
     case 'supabase':
       return new SupabaseUmbralesRepo();
+  }
+}
+
+export function crearRepositorioUsuariosAuth(): RepositorioUsuariosAuth {
+  switch (resolverDriverPersistencia()) {
+    case 'postgres':
+      return new PostgresUsuariosAuthRepo();
+    case 'supabase':
+      throw new Error('La autenticacion con Supabase todavia no esta implementada.');
   }
 }

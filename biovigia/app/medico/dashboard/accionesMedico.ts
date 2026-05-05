@@ -5,7 +5,7 @@ import { crearGestorAlertasMedico } from '@/app/lib/crearDependencias';
 import { requerirMedico } from '@/app/lib/session';
 
 /**
- * Server Action para marcar una alerta como atendida usando el
+ * Sirve para marcar una alerta como atendida usando el
  * medico autenticado en la sesion actual.
  * Se puede ampliar para permitir otras acciones como descartar
  * u otras interacciones con la alerta/paciente.

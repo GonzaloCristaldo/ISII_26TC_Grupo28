@@ -4,38 +4,12 @@ import { revalidatePath } from 'next/cache';
 import { crearGestorRegistroMedicion } from '@/app/lib/crearDependencias';
 import { requerirPaciente } from '@/app/lib/session';
 import { Medicion } from '@/modelos/tipos';
+import { validarDatosFormularioMedicion } from '@/logica/validadores/validadorFormularioMedicion';
 
-type ResultadoFormularioMedicion =
-  | {
-      ok: true;
-      tipo_medicion: 'PresionArterial' | 'Glucosa';
-      valor: number;
-    }
-  | {
-      ok: false;
-      message: string;
-      type: 'error';
-    };
-
-function validarDatosFormularioMedicion(formData: FormData): ResultadoFormularioMedicion {
-  const tipo_medicion = formData.get('tipo_medicion');
-  const valor = Number(formData.get('valor'));
-
-  if (
-    (tipo_medicion !== 'PresionArterial' && tipo_medicion !== 'Glucosa') ||
-    Number.isNaN(valor)
-  ) {
-    return {
-      ok: false,
-      message: 'La medicion recibida es invalida.',
-      type: 'error',
-    };
-  }
-
+function parsearDatosFormularioMedicion(formData: FormData) {
   return {
-    ok: true,
-    tipo_medicion,
-    valor,
+    tipo_medicion: String(formData.get('tipo_medicion') ?? ''),
+    valor: Number(formData.get('valor')),
   };
 }
 
@@ -45,7 +19,8 @@ function validarDatosFormularioMedicion(formData: FormData): ResultadoFormulario
 export async function guardarMedicionAccion(prevState: any, formData: FormData) {
   try {
     const sesion = await requerirPaciente();
-    const datosFormulario = validarDatosFormularioMedicion(formData);
+    const datosFormularioEntrada = parsearDatosFormularioMedicion(formData);
+    const datosFormulario = validarDatosFormularioMedicion(datosFormularioEntrada);
 
     if (!datosFormulario.ok) {
       return datosFormulario;
@@ -58,9 +33,9 @@ export async function guardarMedicionAccion(prevState: any, formData: FormData) 
       fecha: new Date(),
     };
 
-    const servicio = crearGestorRegistroMedicion();
+    const gestor = crearGestorRegistroMedicion();
 
-    await servicio.registrarNuevaMedicion(nuevaMedicion);
+    await gestor.registrarNuevaMedicion(nuevaMedicion);
 
     revalidatePath('/medico/dashboard');
     revalidatePath('/paciente/nueva-medicion');

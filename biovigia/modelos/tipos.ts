@@ -56,3 +56,29 @@ export interface UsuarioSesion {
   medicoId: string | null;
   pacienteId: string | null;
 }
+
+export interface UsuarioAutenticable extends UsuarioSesion {
+  passwordHash: string;
+}
+
+export interface MedicoRegistrable {
+  id: string;
+  nombreCompleto: string;
+  especialidad: string;
+}
+
+export interface DatosCuentaMedico {
+  nombreCompleto: string;
+  especialidad: string;
+  numeroLicencia: string;
+  username: string;
+  passwordHash: string;
+}
+
+export interface DatosCuentaPaciente {
+  nombreCompleto: string;
+  contacto: string;
+  medicoResponsableId: string;
+  username: string;
+  passwordHash: string;
+}

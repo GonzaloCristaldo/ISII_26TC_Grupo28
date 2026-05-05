@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { registrarMedicoAccion, registrarPacienteAccion } from '@/app/auth/accionesAutenticacion';
+import { crearGestorAutenticacion } from '@/app/lib/crearDependencias';
 import { obtenerSesionActual } from '@/app/lib/session';
-import { listarMedicosRegistrables } from '@/persistencia/postgres/usuariosAuth';
 
 type RegistroPageProps = {
   searchParams?: Promise<{
@@ -21,7 +21,8 @@ export default async function RegistroPage({ searchParams }: RegistroPageProps) 
   const params = searchParams ? await searchParams : undefined;
   const registroError = params?.registroError;
   const registroAbierto = params?.registro;
-  const medicos = await listarMedicosRegistrables();
+  const gestorAutenticacion = crearGestorAutenticacion();
+  const medicos = await gestorAutenticacion.listarMedicosRegistrables();
 
   return (
     <main className="min-h-screen bg-slate-100 px-4 py-10">

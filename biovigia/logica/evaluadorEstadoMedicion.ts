@@ -7,39 +7,15 @@ import { Medicion, TipoEstadoMedicion, Umbral } from '../modelos/tipos';
  * parametro vital se encuentra normal,
  * en advertencia o en estado critico.
  */
-
-
-/* Los umbrales simulados no se utilizan, 
-pero sirven para probar la logica de evaluacion sin depender de datos de la bdd, como fallback. 
-*/
-const UMBRALES_SIMULADOS = {
-  PresionArterial: {
-    minimo: 90,
-    maximo_normal: 120,
-    critico: 180,
-  },
-  Glucosa: {
-    minimo: 70,
-    maximo_normal: 100,
-    critico: 140,
-  },
-};
-
 export function evaluarMedicion(
   medicion: Medicion,
-  umbral: Umbral | null = null,
+  umbral: Umbral,
 ): TipoEstadoMedicion {
-  const umbralEvaluacion = umbral
-    ? {
-        minimo: umbral.valor_minimo_normal,
-        maximo_normal: umbral.valor_maximo_normal,
-        critico: umbral.valor_critico,
-      }
-    : UMBRALES_SIMULADOS[medicion.tipo_medicion];
-
-  if (!umbralEvaluacion) {
-    return 'Normal';
-  }
+  const umbralEvaluacion = {
+    minimo: umbral.valor_minimo_normal,
+    maximo_normal: umbral.valor_maximo_normal,
+    critico: umbral.valor_critico,
+  };
 
   const { valor } = medicion;
 

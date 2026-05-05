@@ -39,6 +39,13 @@ export class GestorRegistroMedicion {
     const umbral = this.repoUmbrales
       ? await this.repoUmbrales.obtenerPorTipo(medicionGuardada.tipo_medicion)
       : null;
+
+    if (!umbral) {
+      throw new Error(
+        `No existe un umbral configurado para el tipo de medicion ${medicionGuardada.tipo_medicion}.`,
+      );
+    }
+
     const estado = evaluarMedicion(medicionGuardada, umbral);
 
     let alertaGenerada = false;
