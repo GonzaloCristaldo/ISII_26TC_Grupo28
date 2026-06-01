@@ -53,7 +53,7 @@ export default function BotonLeido({ alertaId }: { alertaId: string }) {
       </button>
 
       {error ? (
-        <p className="max-w-52 text-sm font-medium text-rose-100">
+        <p className="max-w-52 text-sm font-medium text-rose-700">
           {error}
         </p>
       ) : null}

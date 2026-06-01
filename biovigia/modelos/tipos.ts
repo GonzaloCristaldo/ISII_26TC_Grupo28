@@ -33,6 +33,7 @@ export interface Alerta {
 }
 
 export interface AlertaExtendida extends Alerta {
+  paciente_id: string;
   paciente_nombre: string;
   medicion_tipo: TipoMedicionNombre;
   medicion_valor: number;

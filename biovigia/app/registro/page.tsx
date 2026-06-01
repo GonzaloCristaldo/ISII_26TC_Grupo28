@@ -15,7 +15,7 @@ export default async function RegistroPage({ searchParams }: RegistroPageProps) 
   const sesion = await obtenerSesionActual();
 
   if (sesion) {
-    redirect(sesion.rol === 'medico' ? '/medico/dashboard' : '/paciente/nueva-medicion');
+    redirect(sesion.rol === 'medico' ? '/' : '/paciente/nueva-medicion');
   }
 
   const params = searchParams ? await searchParams : undefined;

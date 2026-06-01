@@ -16,5 +16,6 @@ export async function descartarAlertaAccion(alertaId: string) {
 
   await servicio.descartarAlerta(alertaId, sesion.medicoId!);
 
+  revalidatePath('/medico/alertas');
   revalidatePath('/medico/dashboard');
 }

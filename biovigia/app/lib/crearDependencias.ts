@@ -17,7 +17,10 @@ export function crearGestorRegistroMedicion() {
 }
 
 export function crearGestorAlertasMedico() {
-  return new GestorAlertasMedico(crearRepositorioAlertas());
+  return new GestorAlertasMedico(
+    crearRepositorioAlertas(),
+    crearRepositorioMediciones(),
+  );
 }
 
 export function crearGestorAutenticacion() {

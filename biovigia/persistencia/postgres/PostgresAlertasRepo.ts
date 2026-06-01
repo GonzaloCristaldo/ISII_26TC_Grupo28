@@ -11,6 +11,7 @@ type AlertaRow = {
 };
 
 type AlertaExtendidaRow = AlertaRow & {
+  paciente_id: string;
   paciente_nombre: string;
   medicion_tipo: AlertaExtendida['medicion_tipo'];
   medicion_valor: string;
@@ -76,6 +77,7 @@ export class PostgresAlertasRepo implements RepositorioAlertas {
         ea.descripcion AS estado_alerta,
         a.leido_por_medico,
         a.fecha,
+        p.id AS paciente_id,
         p.nombre_completo AS paciente_nombre,
         tm.nombre AS medicion_tipo,
         m.valor AS medicion_valor,
@@ -98,6 +100,7 @@ export class PostgresAlertasRepo implements RepositorioAlertas {
         estado_alerta: row.estado_alerta,
         leido_por_medico: row.leido_por_medico,
         fecha: new Date(row.fecha),
+        paciente_id: row.paciente_id,
         paciente_nombre: row.paciente_nombre,
         medicion_tipo: row.medicion_tipo,
         medicion_valor: parseFloat(row.medicion_valor),

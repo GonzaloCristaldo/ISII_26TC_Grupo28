@@ -11,7 +11,7 @@ import {
 } from '@/logica/validadores/validadorAutenticacion';
 
 function destinoPorRol(rol: 'medico' | 'paciente') {
-  return rol === 'medico' ? '/medico/dashboard' : '/paciente/nueva-medicion';
+  return rol === 'medico' ? '/' : '/paciente/nueva-medicion';
 }
 
 function irAErrorLogin(mensaje: string): never {
@@ -51,6 +51,7 @@ function parsearDatosRegistroPaciente(formData: FormData) {
 
 export async function iniciarSesionAccion(formData: FormData) {
   const datosLogin = parsearDatosLogin(formData);
+  let destino: string;
 
   try {
     validarDatosLogin(datosLogin);
@@ -58,12 +59,13 @@ export async function iniciarSesionAccion(formData: FormData) {
     const usuario = await gestor.iniciarSesionConCredenciales(datosLogin);
 
     await crearSesion(usuario);
-
-    redirect(destinoPorRol(usuario.rol));
+    destino = destinoPorRol(usuario.rol);
   } catch (error) {
     const mensaje = error instanceof Error ? error.message : 'No fue posible iniciar sesion.';
     irAErrorLogin(mensaje);
   }
+
+  redirect(destino);
 }
 
 export async function registrarMedicoAccion(formData: FormData) {
@@ -83,7 +85,7 @@ export async function registrarMedicoAccion(formData: FormData) {
     irAErrorRegistro('medico', 'No se pudo crear la cuenta del medico.');
   }
 
-  redirect('/medico/dashboard');
+  redirect('/');
 }
 
 export async function registrarPacienteAccion(formData: FormData) {

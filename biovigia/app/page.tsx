@@ -5,7 +5,7 @@ import { obtenerSesionActual } from '@/app/lib/session';
 export default async function Home() {
   const sesion = await obtenerSesionActual();
   const accesoPrincipal =
-    sesion?.rol === 'medico' ? '/medico/dashboard' : '/paciente/nueva-medicion';
+    sesion?.rol === 'medico' ? '/medico/alertas' : '/paciente/nueva-medicion';
 
   return (
     <main className="min-h-screen bg-[linear-gradient(135deg,#f8fafc_0%,#e0f2fe_45%,#ecfeff_100%)] px-4 py-10">
@@ -31,6 +31,14 @@ export default async function Home() {
                   >
                     {sesion.rol === 'medico' ? 'Ver alertas pendientes' : 'Registrar nueva medicion'}
                   </Link>
+                  {sesion.rol === 'medico' ? (
+                    <Link
+                      href="/medico/dashboard"
+                      className="rounded-xl border border-slate-300 px-6 py-3 font-semibold text-slate-700 transition hover:bg-slate-100"
+                    >
+                      Ver dashboard detallado
+                    </Link>
+                  ) : null}
                   <form action={cerrarSesionAccion}>
                     <button
                       type="submit"

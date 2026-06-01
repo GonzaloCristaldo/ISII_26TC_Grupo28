@@ -13,7 +13,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const sesion = await obtenerSesionActual();
 
   if (sesion) {
-    redirect(sesion.rol === 'medico' ? '/medico/dashboard' : '/paciente/nueva-medicion');
+    redirect(sesion.rol === 'medico' ? '/' : '/paciente/nueva-medicion');
   }
 
   const params = searchParams ? await searchParams : undefined;
