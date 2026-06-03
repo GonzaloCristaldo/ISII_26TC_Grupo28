@@ -4,6 +4,7 @@ import {
   DatosCuentaMedico,
   DatosCuentaPaciente,
   MedicoRegistrable,
+  RolUsuario,
   UsuarioAutenticable,
 } from '@/modelos/tipos';
 import { pool } from './PostgresCliente';
@@ -12,10 +13,11 @@ type UsuarioAuthRow = {
   usuario_id: string;
   username: string;
   password_hash: string;
-  rol: 'medico' | 'paciente';
+  rol: RolUsuario;
   medico_id: string | null;
   paciente_id: string | null;
   nombre_completo: string;
+  activo: boolean;
 };
 
 type MedicoListadoRow = {
@@ -42,9 +44,10 @@ const QUERY_USUARIO = `
     u.username,
     u.password_hash,
     r.nombre AS rol,
+    u.activo,
     um.medico_id,
     up.paciente_id,
-    COALESCE(m.nombre_completo, p.nombre_completo) AS nombre_completo
+    COALESCE(m.nombre_completo, p.nombre_completo, u.username) AS nombre_completo
   FROM usuarios u
   JOIN roles r ON r.id = u.rol_id
   LEFT JOIN usuario_medico um ON um.usuario_id = u.id
@@ -67,7 +70,7 @@ async function buscarUsuarioPorId(client: PoolClient, usuarioId: string) {
   return mapearUsuario(fila);
 }
 
-async function obtenerRolId(client: PoolClient, nombreRol: 'medico' | 'paciente') {
+async function obtenerRolId(client: PoolClient, nombreRol: RolUsuario) {
   const resultado = await client.query<{ id: string }>(
     'SELECT id FROM roles WHERE nombre = $1 LIMIT 1',
     [nombreRol],
@@ -84,7 +87,7 @@ async function obtenerRolId(client: PoolClient, nombreRol: 'medico' | 'paciente'
 export class PostgresUsuariosAuthRepo implements RepositorioUsuariosAuth {
   async buscarUsuarioPorUsername(username: string): Promise<UsuarioAutenticable | null> {
     const resultado = await pool.query<UsuarioAuthRow>(
-      `${QUERY_USUARIO} WHERE u.username = $1 LIMIT 1`,
+      `${QUERY_USUARIO} WHERE u.username = $1 AND u.activo = true LIMIT 1`,
       [username],
     );
     const fila = resultado.rows[0];
@@ -94,8 +97,11 @@ export class PostgresUsuariosAuthRepo implements RepositorioUsuariosAuth {
 
   async listarMedicosRegistrables(): Promise<MedicoRegistrable[]> {
     const query = `
-      SELECT id, nombre_completo, especialidad
-      FROM medicos
+      SELECT m.id, m.nombre_completo, m.especialidad
+      FROM medicos m
+      JOIN usuario_medico um ON um.medico_id = m.id
+      JOIN usuarios u ON u.id = um.usuario_id
+      WHERE u.activo = true
       ORDER BY nombre_completo ASC
     `;
 

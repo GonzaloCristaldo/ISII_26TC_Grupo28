@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import FormularioMedicion from './FormularioMedicion';
 import { cerrarSesionAccion } from '@/app/auth/accionesAutenticacion';
+import { crearGestorConsultaTiposMedicion } from '@/app/lib/crearDependencias';
 import { requerirPaciente } from '@/app/lib/session';
 
 /**
@@ -8,6 +9,8 @@ import { requerirPaciente } from '@/app/lib/session';
  */
 export default async function NuevaMedicionPage() {
   const sesion = await requerirPaciente();
+  const gestorTiposMedicion = crearGestorConsultaTiposMedicion();
+  const tiposMedicion = await gestorTiposMedicion.listarUmbrales();
 
   return (
     <main className="min-h-screen bg-slate-100 px-4 py-10">
@@ -46,7 +49,7 @@ export default async function NuevaMedicionPage() {
             La medicion se guarda asociada a usted.
           </p>
 
-          <FormularioMedicion />
+          <FormularioMedicion tiposMedicion={tiposMedicion} />
         </section>
       </div>
     </main>

@@ -16,7 +16,7 @@ function parsearDatosFormularioMedicion(formData: FormData) {
 /**
  * Server Action para registrar una medicion p/ paciente con sesion iniciada.
  */
-export async function guardarMedicionAccion(prevState: any, formData: FormData) {
+export async function guardarMedicionAccion(_prevState: unknown, formData: FormData) {
   try {
     const sesion = await requerirPaciente();
     const datosFormularioEntrada = parsearDatosFormularioMedicion(formData);

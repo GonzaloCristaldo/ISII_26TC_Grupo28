@@ -1,11 +1,34 @@
 import Link from 'next/link';
 import { cerrarSesionAccion } from '@/app/auth/accionesAutenticacion';
+import { destinoPorRol } from '@/app/lib/destinos';
 import { obtenerSesionActual } from '@/app/lib/session';
+import { RolUsuario } from '@/modelos/tipos';
+
+function obtenerMensajeAcceso(rol: RolUsuario) {
+  if (rol === 'administrador') {
+    return 'Puede gestionar usuarios, asignaciones y parametros clinicos del sistema.';
+  }
+
+  if (rol === 'medico') {
+    return 'Puede revisar alertas pendientes y consultar el seguimiento de sus pacientes.';
+  }
+
+  return 'Puede registrar nuevas mediciones vitales para el seguimiento de su medico responsable.';
+}
 
 export default async function Home() {
   const sesion = await obtenerSesionActual();
-  const accesoPrincipal =
-    sesion?.rol === 'medico' ? '/medico/alertas' : '/paciente/nueva-medicion';
+  const accesoPrincipal = sesion
+    ? sesion.rol === 'medico'
+      ? '/medico/alertas'
+      : destinoPorRol(sesion.rol)
+    : '/login';
+  const textoAccesoPrincipal =
+    sesion?.rol === 'administrador'
+      ? 'Abrir administracion'
+      : sesion?.rol === 'medico'
+        ? 'Ver alertas pendientes'
+        : 'Registrar nueva medicion';
 
   return (
     <main className="min-h-screen bg-[linear-gradient(135deg,#f8fafc_0%,#e0f2fe_45%,#ecfeff_100%)] px-4 py-10">
@@ -29,7 +52,7 @@ export default async function Home() {
                     href={accesoPrincipal}
                     className="rounded-xl bg-slate-900 px-6 py-3 font-semibold text-white transition hover:bg-slate-800"
                   >
-                    {sesion.rol === 'medico' ? 'Ver alertas pendientes' : 'Registrar nueva medicion'}
+                    {textoAccesoPrincipal}
                   </Link>
                   {sesion.rol === 'medico' ? (
                     <Link
@@ -67,7 +90,7 @@ export default async function Home() {
                 <p className="mt-2 text-slate-300">Usuario: {sesion.username}</p>
                 <p className="mt-1 text-slate-300">Rol: {sesion.rol}</p>
                 <p className="mt-6 text-sm leading-7 text-slate-400">
-                  Puede visualizar sus mediciones y alertas.
+                  {obtenerMensajeAcceso(sesion.rol)}
                 </p>
               </>
             ) : (

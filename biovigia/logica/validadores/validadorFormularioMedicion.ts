@@ -1,5 +1,3 @@
-import { TipoMedicionNombre } from '@/modelos/tipos';
-
 export type DatosFormularioMedicionEntrada = {
   tipo_medicion: string;
   valor: number;
@@ -8,7 +6,7 @@ export type DatosFormularioMedicionEntrada = {
 export type DatosFormularioMedicion =
   | {
       ok: true;
-      tipo_medicion: TipoMedicionNombre;
+      tipo_medicion: string;
       valor: number;
     }
   | {
@@ -20,10 +18,7 @@ export type DatosFormularioMedicion =
 export function validarDatosFormularioMedicion(
   datos: DatosFormularioMedicionEntrada,
 ): DatosFormularioMedicion {
-  if (
-    (datos.tipo_medicion !== 'PresionArterial' && datos.tipo_medicion !== 'Glucosa') ||
-    Number.isNaN(datos.valor)
-  ) {
+  if (!datos.tipo_medicion.trim() || Number.isNaN(datos.valor) || datos.valor <= 0) {
     return {
       ok: false,
       message: 'La medicion recibida es invalida.',
@@ -33,7 +28,7 @@ export function validarDatosFormularioMedicion(
 
   return {
     ok: true,
-    tipo_medicion: datos.tipo_medicion,
+    tipo_medicion: datos.tipo_medicion.trim(),
     valor: datos.valor,
   };
 }

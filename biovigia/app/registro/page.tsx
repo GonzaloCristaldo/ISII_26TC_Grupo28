@@ -1,6 +1,10 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { registrarMedicoAccion, registrarPacienteAccion } from '@/app/auth/accionesAutenticacion';
+import {
+  registrarMedicoAccion,
+  registrarPacienteAccion,
+} from '@/app/auth/accionesAutenticacion';
+import { destinoPorRol } from '@/app/lib/destinos';
 import { crearGestorAutenticacion } from '@/app/lib/crearDependencias';
 import { obtenerSesionActual } from '@/app/lib/session';
 
@@ -15,7 +19,7 @@ export default async function RegistroPage({ searchParams }: RegistroPageProps) 
   const sesion = await obtenerSesionActual();
 
   if (sesion) {
-    redirect(sesion.rol === 'medico' ? '/' : '/paciente/nueva-medicion');
+    redirect(destinoPorRol(sesion.rol));
   }
 
   const params = searchParams ? await searchParams : undefined;

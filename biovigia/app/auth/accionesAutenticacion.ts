@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { crearGestorAutenticacion } from '@/app/lib/crearDependencias';
+import { destinoPorRol } from '@/app/lib/destinos';
 import { crearSesion, destruirSesion, obtenerSesionActual } from '@/app/lib/session';
 import { esErrorUnico } from '@/logica/errores/erroresPersistencia';
 import {
@@ -9,10 +10,6 @@ import {
   validarDatosRegistroMedico,
   validarDatosRegistroPaciente,
 } from '@/logica/validadores/validadorAutenticacion';
-
-function destinoPorRol(rol: 'medico' | 'paciente') {
-  return rol === 'medico' ? '/' : '/paciente/nueva-medicion';
-}
 
 function irAErrorLogin(mensaje: string): never {
   redirect(`/login?loginError=${encodeURIComponent(mensaje)}`);

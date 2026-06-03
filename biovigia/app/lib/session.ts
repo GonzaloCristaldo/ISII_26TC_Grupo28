@@ -146,3 +146,7 @@ export async function requerirMedico() {
 
   return sesion;
 }
+
+export async function requerirAdministrador() {
+  return requerirRol('administrador');
+}

@@ -21,7 +21,8 @@ CREATE TABLE IF NOT EXISTS tipos_medicion (
 
 INSERT INTO roles (id, nombre) VALUES
   ('7d696604-c2ce-47b1-ae2d-72c8ff8f86f1', 'medico'),
-  ('6da368fb-2d8d-4d39-8de6-e75e70ca9018', 'paciente')
+  ('6da368fb-2d8d-4d39-8de6-e75e70ca9018', 'paciente'),
+  ('82be8d86-9e52-4e2e-9a62-9a17b2e61335', 'administrador')
 ON CONFLICT (nombre) DO NOTHING;
 
 INSERT INTO estados_alerta (id, descripcion) VALUES
@@ -64,6 +65,7 @@ BEGIN
 END $$;
 
 ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS rol_id UUID;
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS activo BOOLEAN NOT NULL DEFAULT true;
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'usuarios' AND column_name = 'rol') THEN
@@ -129,7 +131,10 @@ CREATE TABLE IF NOT EXISTS umbrales_nuevos (
       CHECK (
         valor_minimo_normal >= 0 AND
         valor_minimo_normal < valor_maximo_normal AND
-        valor_critico > valor_maximo_normal
+        (
+          valor_critico < valor_minimo_normal OR
+          valor_critico > valor_maximo_normal
+        )
       )
 );
 
@@ -165,6 +170,9 @@ ALTER TABLE alertas
 ALTER TABLE usuarios
   ALTER COLUMN rol_id SET NOT NULL;
 
+ALTER TABLE usuarios
+  ALTER COLUMN activo SET DEFAULT true;
+
 ALTER TABLE mediciones DROP CONSTRAINT IF EXISTS fk_medicion_tipo_migrado;
 ALTER TABLE mediciones
   ADD CONSTRAINT fk_medicion_tipo_migrado
@@ -187,6 +195,19 @@ ALTER TABLE alertas
 ALTER TABLE mediciones DROP CONSTRAINT IF EXISTS ck_medicion_valor_positivo;
 ALTER TABLE mediciones
   ADD CONSTRAINT ck_medicion_valor_positivo CHECK (valor > 0);
+
+ALTER TABLE umbrales DROP CONSTRAINT IF EXISTS ck_umbral_rangos;
+ALTER TABLE umbrales DROP CONSTRAINT IF EXISTS ck_umbral_rangos_nuevo;
+ALTER TABLE umbrales
+  ADD CONSTRAINT ck_umbral_rangos
+  CHECK (
+    valor_minimo_normal >= 0 AND
+    valor_minimo_normal < valor_maximo_normal AND
+    (
+      valor_critico < valor_minimo_normal OR
+      valor_critico > valor_maximo_normal
+    )
+  );
 
 ALTER TABLE usuarios DROP COLUMN IF EXISTS medico_id;
 ALTER TABLE usuarios DROP COLUMN IF EXISTS paciente_id;

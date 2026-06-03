@@ -14,6 +14,7 @@ type AlertaExtendidaRow = AlertaRow & {
   paciente_id: string;
   paciente_nombre: string;
   medicion_tipo: AlertaExtendida['medicion_tipo'];
+  medicion_unidad: string;
   medicion_valor: string;
   medicion_fecha: string;
 };
@@ -80,6 +81,7 @@ export class PostgresAlertasRepo implements RepositorioAlertas {
         p.id AS paciente_id,
         p.nombre_completo AS paciente_nombre,
         tm.nombre AS medicion_tipo,
+        tm.unidad AS medicion_unidad,
         m.valor AS medicion_valor,
         m.fecha AS medicion_fecha
       FROM alertas a
@@ -103,6 +105,7 @@ export class PostgresAlertasRepo implements RepositorioAlertas {
         paciente_id: row.paciente_id,
         paciente_nombre: row.paciente_nombre,
         medicion_tipo: row.medicion_tipo,
+        medicion_unidad: row.medicion_unidad,
         medicion_valor: parseFloat(row.medicion_valor),
         medicion_fecha: new Date(row.medicion_fecha),
       }));

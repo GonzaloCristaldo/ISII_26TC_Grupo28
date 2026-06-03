@@ -1,8 +1,12 @@
 import { RepositorioAlertas } from '@/modelos/repositorios/RepositorioAlertas';
+import { RepositorioAdministracionUsuarios } from '@/modelos/repositorios/RepositorioAdministracionUsuarios';
+import { RepositorioConfiguracionClinica } from '@/modelos/repositorios/RepositorioConfiguracionClinica';
 import { RepositorioMediciones } from '@/modelos/repositorios/RepositorioMediciones';
 import { RepositorioUmbrales } from '@/modelos/repositorios/RepositorioUmbrales';
 import { RepositorioUsuariosAuth } from '@/modelos/repositorios/RepositorioUsuariosAuth';
+import { PostgresAdministracionUsuariosRepo } from '@/persistencia/postgres/PostgresAdministracionUsuariosRepo';
 import { PostgresAlertasRepo } from '@/persistencia/postgres/PostgresAlertasRepo';
+import { PostgresConfiguracionClinicaRepo } from '@/persistencia/postgres/PostgresConfiguracionClinicaRepo';
 import { PostgresMedicionesRepo } from '@/persistencia/postgres/PostgresMedicionesRepo';
 import { PostgresUmbralesRepo } from '@/persistencia/postgres/PostgresUmbralesRepo';
 import { PostgresUsuariosAuthRepo } from '@/persistencia/postgres/PostgresUsuariosAuthRepo';
@@ -71,5 +75,23 @@ export function crearRepositorioUsuariosAuth(): RepositorioUsuariosAuth {
       return new PostgresUsuariosAuthRepo();
     case 'supabase':
       throw new Error('La autenticacion con Supabase todavia no esta implementada.');
+  }
+}
+
+export function crearRepositorioAdministracionUsuarios(): RepositorioAdministracionUsuarios {
+  switch (resolverDriverPersistencia()) {
+    case 'postgres':
+      return new PostgresAdministracionUsuariosRepo();
+    case 'supabase':
+      throw new Error('La administracion de usuarios con Supabase todavia no esta implementada.');
+  }
+}
+
+export function crearRepositorioConfiguracionClinica(): RepositorioConfiguracionClinica {
+  switch (resolverDriverPersistencia()) {
+    case 'postgres':
+      return new PostgresConfiguracionClinicaRepo();
+    case 'supabase':
+      throw new Error('La configuracion clinica con Supabase todavia no esta implementada.');
   }
 }

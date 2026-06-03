@@ -13,6 +13,7 @@ export type AlertaDashboard = {
   paciente_id: string;
   paciente_nombre: string;
   medicion_tipo: TipoMedicionNombre;
+  medicion_unidad: string;
   medicion_valor: number;
   medicion_fecha: string;
 };
@@ -25,33 +26,28 @@ export type MedicionDashboard = {
   fecha: string;
 };
 
+export type TipoMedicionDashboard = {
+  tipo_medicion: TipoMedicionNombre;
+  unidad: string;
+};
+
 type Props = {
   alertasPendientes: AlertaDashboard[];
   historialPorPaciente: Record<string, MedicionDashboard[]>;
+  tiposMedicion: TipoMedicionDashboard[];
 };
 
 type FiltroEstado = 'Todos' | TipoEstadoMedicion;
 
-function obtenerUnidadMedicion(tipo: TipoMedicionNombre) {
-  switch (tipo) {
-    case 'PresionArterial':
-      return 'mmHg';
-    case 'Glucosa':
-      return 'mg/dL';
-    default:
-      return tipo;
-  }
+function obtenerUnidadMedicion(tipo: TipoMedicionNombre, tiposMedicion: TipoMedicionDashboard[]) {
+  return tiposMedicion.find((tipoMedicion) => tipoMedicion.tipo_medicion === tipo)?.unidad ?? tipo;
 }
 
 function obtenerNombreMedicion(tipo: TipoMedicionNombre) {
-  switch (tipo) {
-    case 'PresionArterial':
-      return 'Presion arterial';
-    case 'Glucosa':
-      return 'Glucosa';
-    default:
-      return tipo;
-  }
+  return tipo
+    .replace(/[_-]+/g, ' ')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .trim();
 }
 
 function obtenerFormatoFecha(fecha: string) {
@@ -146,11 +142,12 @@ function obtenerPuntosGrafico(mediciones: MedicionDashboard[], minimo: number, m
 export default function PanelDashboardMedico({
   alertasPendientes,
   historialPorPaciente,
+  tiposMedicion,
 }: Props) {
   const alertasOrdenadas = ordenarAlertasPorPrioridad(alertasPendientes);
   const [alertaSeleccionadaId, setAlertaSeleccionadaId] = useState(alertasOrdenadas[0]?.id ?? '');
   const [tipoSeleccionado, setTipoSeleccionado] = useState<TipoMedicionNombre>(
-    alertasOrdenadas[0]?.medicion_tipo ?? 'PresionArterial',
+    alertasOrdenadas[0]?.medicion_tipo ?? tiposMedicion[0]?.tipo_medicion ?? '',
   );
   const [filtroEstado, setFiltroEstado] = useState<FiltroEstado>('Todos');
   const [busqueda, setBusqueda] = useState('');
@@ -197,9 +194,32 @@ export default function PanelDashboardMedico({
   const eventosPaciente = alertasOrdenadas.filter(
     (alerta) => alerta.paciente_id === alertaSeleccionada?.paciente_id,
   );
+  const totalCriticas = alertasOrdenadas.filter(
+    (alerta) => alerta.estado_alerta === 'Critico',
+  ).length;
+  const totalAdvertencias = alertasOrdenadas.filter(
+    (alerta) => alerta.estado_alerta === 'Advertencia',
+  ).length;
+  const pacientesAfectados = new Set(alertasOrdenadas.map((alerta) => alerta.paciente_id)).size;
 
   return (
     <div className="space-y-6">
+      <div className="grid gap-3 md:grid-cols-4">
+        {[
+          ['Pendientes', alertasOrdenadas.length],
+          ['Criticas', totalCriticas],
+          ['Advertencias', totalAdvertencias],
+          ['Pacientes', pacientesAfectados],
+        ].map(([etiqueta, valor]) => (
+          <div key={etiqueta} className="rounded-lg border border-slate-300 bg-white px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+              {etiqueta}
+            </p>
+            <p className="mt-2 text-2xl font-semibold text-slate-950">{valor}</p>
+          </div>
+        ))}
+      </div>
+
       <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
         <input
           type="search"
@@ -290,9 +310,9 @@ export default function PanelDashboardMedico({
                             {obtenerNombreMedicion(alerta.medicion_tipo)}
                           </p>
                           <p className="mt-1 text-3xl font-semibold text-slate-950">
-                            {alerta.medicion_valor}{' '}
+                              {alerta.medicion_valor}{' '}
                             <span className="font-mono text-sm font-semibold text-slate-500">
-                              {obtenerUnidadMedicion(alerta.medicion_tipo)}
+                              {alerta.medicion_unidad}
                             </span>
                           </p>
                         </div>
@@ -355,7 +375,7 @@ export default function PanelDashboardMedico({
                   <p className="mt-3 text-4xl font-semibold text-slate-950">
                     {alertaSeleccionada.medicion_valor}{' '}
                     <span className="font-mono text-base text-slate-500">
-                      {obtenerUnidadMedicion(alertaSeleccionada.medicion_tipo)}
+                      {alertaSeleccionada.medicion_unidad}
                     </span>
                   </p>
                 </div>
@@ -406,7 +426,7 @@ export default function PanelDashboardMedico({
                       </h3>
                     </div>
                     <p className="font-mono text-sm text-slate-500">
-                      {obtenerUnidadMedicion(tipoActivo)}
+                      {obtenerUnidadMedicion(tipoActivo, tiposMedicion)}
                     </p>
                   </div>
 
@@ -497,7 +517,7 @@ export default function PanelDashboardMedico({
                           <p className="mt-1 text-lg font-semibold text-slate-950">
                             {medicion.valor}{' '}
                             <span className="font-mono text-sm text-slate-500">
-                              {obtenerUnidadMedicion(medicion.tipo_medicion)}
+                              {obtenerUnidadMedicion(medicion.tipo_medicion, tiposMedicion)}
                             </span>
                           </p>
                         </div>

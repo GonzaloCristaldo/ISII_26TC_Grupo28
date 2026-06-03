@@ -18,8 +18,12 @@ export function evaluarMedicion(
   };
 
   const { valor } = medicion;
+  const criticoAlto = umbralEvaluacion.critico > umbralEvaluacion.maximo_normal;
+  const criticoBajo = umbralEvaluacion.critico < umbralEvaluacion.minimo;
 
-  if (valor >= umbralEvaluacion.critico) {
+  if (criticoAlto && valor >= umbralEvaluacion.critico) {
+    return 'Critico';
+  } else if (criticoBajo && valor <= umbralEvaluacion.critico) {
     return 'Critico';
   } else if (valor > umbralEvaluacion.maximo_normal) {
     return 'Advertencia';

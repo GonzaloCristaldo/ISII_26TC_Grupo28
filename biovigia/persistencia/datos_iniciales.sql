@@ -2,7 +2,8 @@
 
 INSERT INTO roles (id, nombre) VALUES
   ('7d696604-c2ce-47b1-ae2d-72c8ff8f86f1', 'medico'),
-  ('6da368fb-2d8d-4d39-8de6-e75e70ca9018', 'paciente')
+  ('6da368fb-2d8d-4d39-8de6-e75e70ca9018', 'paciente'),
+  ('82be8d86-9e52-4e2e-9a62-9a17b2e61335', 'administrador')
 ON CONFLICT (nombre) DO NOTHING;
 
 INSERT INTO estados_alerta (id, descripcion) VALUES
@@ -28,6 +29,15 @@ VALUES (
   '3d5a4435-0275-430c-99e2-ab001ac0aa3f'
 )
 ON CONFLICT DO NOTHING;
+
+INSERT INTO usuarios (id, username, password_hash, rol_id)
+VALUES (
+  '61bbfb11-4045-4d49-873b-54401a5d1349',
+  'admin',
+  'scrypt$adminseedbiovigia01$fa0c22b0845943125cc9db2ada9fb51793c691b2e374856a75c8b0af089d75391c8420eda607182ebf7f47d8e3936d4fe3329c16bb9a48222ebd7bbdb46e4270',
+  '82be8d86-9e52-4e2e-9a62-9a17b2e61335'
+)
+ON CONFLICT (username) DO NOTHING;
 
 INSERT INTO usuarios (id, username, password_hash, rol_id)
 VALUES (

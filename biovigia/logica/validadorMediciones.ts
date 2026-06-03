@@ -1,31 +1,139 @@
 /**
- * Validador de Mediciones
- * 
- * Reglas de dominio para validar que los datos registrados
- * sean físicamente y biológicamente posibles para una persona.
- * Sirve como protección contra errores de tipeo antes
- * de guardar los datos en la base de datos o evaluarlos clínicamente.
- * Con esto se aborda lo anotado en el plan de riesgos.
+ * Reglas de dominio para evitar mediciones fisiologicamente imposibles.
+ *
+ * Los tipos de medicion son administrables, por eso no se compara el nombre
+ * exacto de la BD: se normaliza texto para tolerar acentos, espacios y variantes
+ * como "PresionArterial", "Presion arterial" u "Oxigeno en sangre".
  */
 
-const LIMITES_BIOLOGICOS = {
-  // Valores en mmHG - Menor a 20 o mayor a 300 es considerado biológicamente imposible o un error del dispositivo
-  PresionArterial: { min: 20, max: 300 },
-  // Valores en mg/dL - Menor a 10 y mayor a 1000 excede lo posible para una persona.
-  Glucosa: { min: 10, max: 1000 }
+type LimiteBiologico = {
+  min: number;
+  max: number;
+  descripcion: string;
 };
 
-export function validarLimitesBiologicos(tipo_medicion: string, valor: number): void {
-  const limites = LIMITES_BIOLOGICOS[tipo_medicion as keyof typeof LIMITES_BIOLOGICOS];
+type ContextoLimiteBiologico = {
+  unidad?: string;
+  valor_minimo_normal?: number;
+  valor_maximo_normal?: number;
+  valor_critico?: number;
+};
 
-  if (!limites) {
-    // Si se agrega un nuevo tipo de medicion en la BD que no este aca, 
-    // lo dejamos pasar, o se puede bloquear. 
-    // Para la primera entrega quedan solo estos 2 tipos de mediciones.
-    return;
+const LIMITES_POR_TIPO: Array<{
+  patrones: string[];
+  limite: LimiteBiologico;
+}> = [
+  {
+    patrones: ['presionarterial', 'presionsistolica', 'tensionarterial'],
+    limite: { min: 20, max: 300, descripcion: 'presion arterial' },
+  },
+  {
+    patrones: ['glucosa', 'glucemia', 'azucarensangre'],
+    limite: { min: 10, max: 1000, descripcion: 'glucosa en sangre' },
+  },
+  {
+    patrones: [
+      'oxigenoensangre',
+      'saturaciondeoxigeno',
+      'saturacionoxigeno',
+      'saturaciono2',
+      'saturacion',
+      'sato2',
+      'oxigeno',
+      'spo2',
+      'oximetria',
+    ],
+    limite: { min: 0, max: 100, descripcion: 'oxigeno en sangre' },
+  },
+  {
+    patrones: ['temperatura', 'temperaturacorporal'],
+    limite: { min: 25, max: 45, descripcion: 'temperatura corporal' },
+  },
+  {
+    patrones: ['frecuenciacardiaca', 'pulso', 'ritmocardiaco'],
+    limite: { min: 20, max: 250, descripcion: 'frecuencia cardiaca' },
+  },
+  {
+    patrones: ['frecuenciarespiratoria', 'respiracionesporminuto'],
+    limite: { min: 4, max: 80, descripcion: 'frecuencia respiratoria' },
+  },
+];
+
+const LIMITES_POR_UNIDAD: Array<{
+  unidades: string[];
+  limite: LimiteBiologico;
+}> = [
+  {
+    unidades: ['%', 'porcentaje'],
+    limite: { min: 0, max: 100, descripcion: 'valor porcentual' },
+  },
+  {
+    unidades: ['mmhg'],
+    limite: { min: 20, max: 300, descripcion: 'presion en mmHg' },
+  },
+  {
+    unidades: ['bpm', 'lpm', 'latidosporminuto'],
+    limite: { min: 20, max: 250, descripcion: 'frecuencia cardiaca' },
+  },
+  {
+    unidades: ['rpm', 'respmin', 'respiracionesporminuto'],
+    limite: { min: 4, max: 80, descripcion: 'frecuencia respiratoria' },
+  },
+  {
+    unidades: ['c', 'celsius', 'gradosc'],
+    limite: { min: 25, max: 45, descripcion: 'temperatura corporal' },
+  },
+];
+
+function normalizarTexto(texto: string) {
+  return texto
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9%]+/g, '');
+}
+
+function obtenerLimitePorTipo(tipoMedicion: string) {
+  const tipoNormalizado = normalizarTexto(tipoMedicion);
+
+  return LIMITES_POR_TIPO.find(({ patrones }) =>
+    patrones.some((patron) => tipoNormalizado.includes(patron)),
+  )?.limite;
+}
+
+function obtenerLimitePorUnidad(unidad?: string) {
+  if (!unidad) return null;
+
+  const unidadNormalizada = normalizarTexto(unidad);
+
+  return LIMITES_POR_UNIDAD.find(({ unidades }) =>
+    unidades.some((unidadPermitida) => unidadNormalizada === normalizarTexto(unidadPermitida)),
+  )?.limite;
+}
+
+function obtenerLimiteBiologico(
+  tipoMedicion: string,
+  contexto?: ContextoLimiteBiologico,
+): LimiteBiologico | null {
+  return obtenerLimitePorTipo(tipoMedicion) ?? obtenerLimitePorUnidad(contexto?.unidad) ?? null;
+}
+
+export function validarLimitesBiologicos(
+  tipo_medicion: string,
+  valor: number,
+  contexto?: ContextoLimiteBiologico,
+): void {
+  const limite = obtenerLimiteBiologico(tipo_medicion, contexto);
+
+  if (!limite) {
+    throw new Error(
+      `No hay limites biologicos configurados para ${tipo_medicion}. Configure el tipo con un nombre o unidad reconocible antes de registrar mediciones.`,
+    );
   }
 
-  if (valor < limites.min || valor > limites.max) {
-    throw new Error(`El valor ${valor} no es fisiológicamente posible para ${tipo_medicion}. Revise si hay un error de tipeo.`);
+  if (valor < limite.min || valor > limite.max) {
+    throw new Error(
+      `El valor ${valor} no es fisiologicamente posible para ${limite.descripcion}. Debe estar entre ${limite.min} y ${limite.max}.`,
+    );
   }
 }

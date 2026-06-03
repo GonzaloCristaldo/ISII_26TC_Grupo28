@@ -1,6 +1,12 @@
 export type TipoEstadoMedicion = 'Normal' | 'Advertencia' | 'Critico';
-export type TipoMedicionNombre = 'PresionArterial' | 'Glucosa';
-export type RolUsuario = 'medico' | 'paciente';
+export type TipoMedicionNombre = string;
+export type RolUsuario = 'medico' | 'paciente' | 'administrador';
+
+export interface TipoMedicion {
+  id: string;
+  nombre: TipoMedicionNombre;
+  unidad: string;
+}
 
 export interface Paciente {
   id: string;
@@ -36,6 +42,7 @@ export interface AlertaExtendida extends Alerta {
   paciente_id: string;
   paciente_nombre: string;
   medicion_tipo: TipoMedicionNombre;
+  medicion_unidad: string;
   medicion_valor: number;
   medicion_fecha: Date;
 }
@@ -62,6 +69,16 @@ export interface UsuarioAutenticable extends UsuarioSesion {
   passwordHash: string;
 }
 
+export interface UsuarioAdministrable extends UsuarioSesion {
+  activo: boolean;
+  creadoEn: Date;
+  especialidad: string | null;
+  numeroLicencia: string | null;
+  contacto: string | null;
+  medicoResponsableId: string | null;
+  medicoResponsableNombre: string | null;
+}
+
 export interface MedicoRegistrable {
   id: string;
   nombreCompleto: string;
@@ -82,4 +99,36 @@ export interface DatosCuentaPaciente {
   medicoResponsableId: string;
   username: string;
   passwordHash: string;
+}
+
+export interface DatosEdicionMedico {
+  medicoId: string;
+  nombreCompleto: string;
+  especialidad: string;
+  numeroLicencia: string;
+}
+
+export interface DatosEdicionPaciente {
+  pacienteId: string;
+  nombreCompleto: string;
+  contacto: string;
+  medicoResponsableId: string;
+}
+
+export interface TipoMedicionConUmbral extends TipoMedicion {
+  valor_minimo_normal: number;
+  valor_maximo_normal: number;
+  valor_critico: number;
+}
+
+export interface DatosTipoMedicionConUmbral {
+  nombre: string;
+  unidad: string;
+  valor_minimo_normal: number;
+  valor_maximo_normal: number;
+  valor_critico: number;
+}
+
+export interface DatosActualizacionTipoMedicionConUmbral extends DatosTipoMedicionConUmbral {
+  tipoMedicionId: string;
 }

@@ -3,7 +3,7 @@ import { Medicion, Umbral } from '@/modelos/tipos';
 import { supabase } from './SupabaseCliente';
 
 export class SupabaseUmbralesRepo implements RepositorioUmbrales {
-  async obtenerPorTipo(tipoMedicion: Medicion['tipo_medicion']): Promise<Umbral | null> {
+  async listar(): Promise<Umbral[]> {
     const { data, error } = await supabase
       .from('umbrales')
       .select<Umbral>(
@@ -11,9 +11,14 @@ export class SupabaseUmbralesRepo implements RepositorioUmbrales {
       );
 
     if (error) {
-      throw new Error(`Error obteniendo umbral: ${error.message}`);
+      throw new Error(`Error listando umbrales: ${error.message}`);
     }
 
-    return data.find((umbral) => umbral.tipo_medicion === tipoMedicion) ?? null;
+    return data;
+  }
+
+  async obtenerPorTipo(tipoMedicion: Medicion['tipo_medicion']): Promise<Umbral | null> {
+    const umbrales = await this.listar();
+    return umbrales.find((umbral) => umbral.tipo_medicion === tipoMedicion) ?? null;
   }
 }

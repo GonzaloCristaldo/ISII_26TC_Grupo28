@@ -1,5 +1,8 @@
 import Link from 'next/link';
-import { crearGestorAlertasMedico } from '@/app/lib/crearDependencias';
+import {
+  crearGestorAlertasMedico,
+  crearGestorConsultaTiposMedicion,
+} from '@/app/lib/crearDependencias';
 import { cerrarSesionAccion } from '@/app/auth/accionesAutenticacion';
 import { requerirMedico } from '@/app/lib/session';
 import type { AlertaExtendida, Medicion } from '@/modelos/tipos';
@@ -7,6 +10,7 @@ import PanelDashboardMedico from './PanelDashboardMedico';
 import type {
   AlertaDashboard,
   MedicionDashboard,
+  TipoMedicionDashboard,
 } from './PanelDashboardMedico';
 
 function serializarAlerta(alerta: AlertaExtendida): AlertaDashboard {
@@ -19,6 +23,7 @@ function serializarAlerta(alerta: AlertaExtendida): AlertaDashboard {
     paciente_id: alerta.paciente_id,
     paciente_nombre: alerta.paciente_nombre,
     medicion_tipo: alerta.medicion_tipo,
+    medicion_unidad: alerta.medicion_unidad,
     medicion_valor: alerta.medicion_valor,
     medicion_fecha: alerta.medicion_fecha.toISOString(),
   };
@@ -41,12 +46,18 @@ export default async function MedicoDashboardPage() {
   const sesion = await requerirMedico();
 
   let alertasPendientes: AlertaExtendida[] = [];
-  let historialPorPaciente: Record<string, MedicionDashboard[]> = {};
+  const historialPorPaciente: Record<string, MedicionDashboard[]> = {};
+  let tiposMedicion: TipoMedicionDashboard[] = [];
   let mensajeError: string | null = null;
 
   try {
     const gestorAlertasMedico = crearGestorAlertasMedico();
+    const gestorTiposMedicion = crearGestorConsultaTiposMedicion();
     alertasPendientes = await gestorAlertasMedico.revisarAlertasPendientes(sesion.medicoId!);
+    tiposMedicion = (await gestorTiposMedicion.listarUmbrales()).map((umbral) => ({
+      tipo_medicion: umbral.tipo_medicion,
+      unidad: umbral.unidad,
+    }));
 
     const pacientesConAlertas = Array.from(
       new Set(alertasPendientes.map((alerta) => alerta.paciente_id)),
@@ -117,6 +128,7 @@ export default async function MedicoDashboardPage() {
             <PanelDashboardMedico
               alertasPendientes={alertasPendientes.map(serializarAlerta)}
               historialPorPaciente={historialPorPaciente}
+              tiposMedicion={tiposMedicion}
             />
           )}
         </div>

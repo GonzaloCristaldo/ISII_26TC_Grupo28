@@ -37,6 +37,7 @@ CREATE TABLE usuarios (
     username VARCHAR(100) UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
     rol_id UUID NOT NULL,
+    activo BOOLEAN NOT NULL DEFAULT true,
     creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_usuario_rol
       FOREIGN KEY (rol_id) REFERENCES roles(id)
@@ -71,7 +72,10 @@ CREATE TABLE umbrales (
       CHECK (
         valor_minimo_normal >= 0 AND
         valor_minimo_normal < valor_maximo_normal AND
-        valor_critico > valor_maximo_normal
+        (
+          valor_critico < valor_minimo_normal OR
+          valor_critico > valor_maximo_normal
+        )
       )
 );
 

@@ -5,5 +5,6 @@ import { Medicion, Umbral } from '../tipos';
  * lógica sobre los umbrales, y asi no conoce detalles de persistencia.
  */
 export interface RepositorioUmbrales {
+  listar(): Promise<Umbral[]>;
   obtenerPorTipo(tipoMedicion: Medicion['tipo_medicion']): Promise<Umbral | null>;
 }

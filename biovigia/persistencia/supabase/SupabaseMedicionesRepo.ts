@@ -42,7 +42,7 @@ export class SupabaseMedicionesRepo implements RepositorioMediciones {
       .select<{
         id?: string;
         paciente_id: string;
-        tipo_medicion: 'PresionArterial' | 'Glucosa';
+        tipo_medicion: string;
         valor: number;
         fecha: string;
       }>('*');

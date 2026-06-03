@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { iniciarSesionAccion } from '@/app/auth/accionesAutenticacion';
+import { destinoPorRol } from '@/app/lib/destinos';
 import { obtenerSesionActual } from '@/app/lib/session';
 
 type LoginPageProps = {
@@ -13,7 +14,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const sesion = await obtenerSesionActual();
 
   if (sesion) {
-    redirect(sesion.rol === 'medico' ? '/' : '/paciente/nueva-medicion');
+    redirect(destinoPorRol(sesion.rol));
   }
 
   const params = searchParams ? await searchParams : undefined;
