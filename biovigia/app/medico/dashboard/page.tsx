@@ -11,7 +11,7 @@ import type {
   AlertaDashboard,
   MedicionDashboard,
   TipoMedicionDashboard,
-} from './PanelDashboardMedico';
+} from './tiposDashboardMedico';
 
 function serializarAlerta(alerta: AlertaExtendida): AlertaDashboard {
   return {

@@ -1,143 +1,36 @@
 'use client';
 
 import { useState } from 'react';
-import type { TipoEstadoMedicion, TipoMedicionNombre } from '@/modelos/tipos';
+import type { TipoMedicionNombre } from '@/modelos/tipos';
 import BotonLeido from './BotonLeido';
-
-export type AlertaDashboard = {
-  id: string;
-  medicion_id: string;
-  estado_alerta: TipoEstadoMedicion;
-  leido_por_medico: boolean;
-  fecha: string;
-  paciente_id: string;
-  paciente_nombre: string;
-  medicion_tipo: TipoMedicionNombre;
-  medicion_unidad: string;
-  medicion_valor: number;
-  medicion_fecha: string;
-};
-
-export type MedicionDashboard = {
-  id?: string;
-  paciente_id: string;
-  tipo_medicion: TipoMedicionNombre;
-  valor: number;
-  fecha: string;
-};
-
-export type TipoMedicionDashboard = {
-  tipo_medicion: TipoMedicionNombre;
-  unidad: string;
-};
+import {
+  calcularPacientesAfectados,
+  calcularResumenCriticidad,
+  filtrarAlertasDashboard,
+  obtenerClasesEstado,
+  obtenerFormatoFecha,
+  obtenerHistorialPaciente,
+  obtenerNombreMedicion,
+  obtenerPuntosGrafico,
+  obtenerTiempoRelativo,
+  obtenerTipoActivo,
+  obtenerTiposPaciente,
+  obtenerUnidadMedicion,
+  ordenarAlertasPorPrioridad,
+  ordenarMedicionesPorFecha,
+} from './logicaDashboardMedico';
+import type {
+  AlertaDashboard,
+  FiltroEstadoDashboard,
+  MedicionDashboard,
+  TipoMedicionDashboard,
+} from './tiposDashboardMedico';
 
 type Props = {
   alertasPendientes: AlertaDashboard[];
   historialPorPaciente: Record<string, MedicionDashboard[]>;
   tiposMedicion: TipoMedicionDashboard[];
 };
-
-type FiltroEstado = 'Todos' | TipoEstadoMedicion;
-
-function obtenerUnidadMedicion(tipo: TipoMedicionNombre, tiposMedicion: TipoMedicionDashboard[]) {
-  return tiposMedicion.find((tipoMedicion) => tipoMedicion.tipo_medicion === tipo)?.unidad ?? tipo;
-}
-
-function obtenerNombreMedicion(tipo: TipoMedicionNombre) {
-  return tipo
-    .replace(/[_-]+/g, ' ')
-    .replace(/([a-z])([A-Z])/g, '$1 $2')
-    .trim();
-}
-
-function obtenerFormatoFecha(fecha: string) {
-  return new Intl.DateTimeFormat('es-AR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(fecha));
-}
-
-function obtenerTiempoRelativo(fecha: string) {
-  const diferenciaMinutos = Math.max(
-    0,
-    Math.round((Date.now() - new Date(fecha).getTime()) / 60000),
-  );
-
-  if (diferenciaMinutos < 1) return 'ahora';
-  if (diferenciaMinutos < 60) return `hace ${diferenciaMinutos} min`;
-
-  const diferenciaHoras = Math.round(diferenciaMinutos / 60);
-  if (diferenciaHoras < 24) return `hace ${diferenciaHoras} h`;
-
-  return `hace ${Math.round(diferenciaHoras / 24)} d`;
-}
-
-function obtenerPesoEstado(estado: TipoEstadoMedicion) {
-  if (estado === 'Critico') return 0;
-  if (estado === 'Advertencia') return 1;
-  return 2;
-}
-
-function obtenerClasesEstado(estado: TipoEstadoMedicion) {
-  if (estado === 'Critico') {
-    return {
-      texto: 'text-rose-800',
-      fondo: 'bg-rose-700',
-      seleccionado: 'border-rose-700 bg-rose-50',
-    };
-  }
-
-  if (estado === 'Advertencia') {
-    return {
-      texto: 'text-amber-800',
-      fondo: 'bg-amber-600',
-      seleccionado: 'border-amber-600 bg-amber-50',
-    };
-  }
-
-  return {
-    texto: 'text-emerald-800',
-    fondo: 'bg-emerald-700',
-    seleccionado: 'border-emerald-700 bg-emerald-50',
-  };
-}
-
-function ordenarAlertasPorPrioridad(alertas: AlertaDashboard[]) {
-  return [...alertas].sort((a, b) => {
-    const prioridadEstado = obtenerPesoEstado(a.estado_alerta) - obtenerPesoEstado(b.estado_alerta);
-    if (prioridadEstado !== 0) return prioridadEstado;
-
-    return new Date(b.medicion_fecha).getTime() - new Date(a.medicion_fecha).getTime();
-  });
-}
-
-function ordenarMedicionesPorFecha(mediciones: MedicionDashboard[], direccion: 'asc' | 'desc') {
-  return [...mediciones].sort((a, b) => {
-    const diferencia = new Date(a.fecha).getTime() - new Date(b.fecha).getTime();
-    return direccion === 'asc' ? diferencia : -diferencia;
-  });
-}
-
-function obtenerPuntosGrafico(mediciones: MedicionDashboard[], minimo: number, maximo: number) {
-  const margenHorizontal = 8;
-  const margenSuperior = 8;
-  const altoDisponible = 34;
-  const anchoDisponible = 100 - margenHorizontal * 2;
-  const divisorHorizontal = Math.max(mediciones.length - 1, 1);
-
-  return mediciones.map((medicion, indice) => {
-    const proporcionValor = maximo === minimo ? 0.5 : (medicion.valor - minimo) / (maximo - minimo);
-
-    return {
-      medicion,
-      x: margenHorizontal + (indice / divisorHorizontal) * anchoDisponible,
-      y: margenSuperior + (1 - proporcionValor) * altoDisponible,
-    };
-  });
-}
 
 export default function PanelDashboardMedico({
   alertasPendientes,
@@ -149,34 +42,15 @@ export default function PanelDashboardMedico({
   const [tipoSeleccionado, setTipoSeleccionado] = useState<TipoMedicionNombre>(
     alertasOrdenadas[0]?.medicion_tipo ?? tiposMedicion[0]?.tipo_medicion ?? '',
   );
-  const [filtroEstado, setFiltroEstado] = useState<FiltroEstado>('Todos');
+  const [filtroEstado, setFiltroEstado] = useState<FiltroEstadoDashboard>('Todos');
   const [busqueda, setBusqueda] = useState('');
 
-  const textoBusqueda = busqueda.trim().toLowerCase();
-  const alertasFiltradas = alertasOrdenadas.filter((alerta) => {
-    const coincideEstado = filtroEstado === 'Todos' || alerta.estado_alerta === filtroEstado;
-    const coincideBusqueda =
-      textoBusqueda.length === 0 ||
-      alerta.paciente_nombre.toLowerCase().includes(textoBusqueda) ||
-      obtenerNombreMedicion(alerta.medicion_tipo).toLowerCase().includes(textoBusqueda);
-
-    return coincideEstado && coincideBusqueda;
-  });
-
+  const alertasFiltradas = filtrarAlertasDashboard(alertasOrdenadas, filtroEstado, busqueda);
   const alertaSeleccionada =
     alertasOrdenadas.find((alerta) => alerta.id === alertaSeleccionadaId) ?? alertasOrdenadas[0];
-  const historialPaciente = alertaSeleccionada
-    ? historialPorPaciente[alertaSeleccionada.paciente_id] ?? []
-    : [];
-  const tiposPaciente = Array.from(
-    new Set([
-      ...(alertaSeleccionada ? [alertaSeleccionada.medicion_tipo] : []),
-      ...historialPaciente.map((medicion) => medicion.tipo_medicion),
-    ]),
-  );
-  const tipoActivo = tiposPaciente.includes(tipoSeleccionado)
-    ? tipoSeleccionado
-    : alertaSeleccionada?.medicion_tipo ?? tipoSeleccionado;
+  const historialPaciente = obtenerHistorialPaciente(alertaSeleccionada, historialPorPaciente);
+  const tiposPaciente = obtenerTiposPaciente(alertaSeleccionada, historialPaciente);
+  const tipoActivo = obtenerTipoActivo(tiposPaciente, tipoSeleccionado, alertaSeleccionada);
   const historialFiltrado = historialPaciente.filter(
     (medicion) => medicion.tipo_medicion === tipoActivo,
   );
@@ -194,21 +68,16 @@ export default function PanelDashboardMedico({
   const eventosPaciente = alertasOrdenadas.filter(
     (alerta) => alerta.paciente_id === alertaSeleccionada?.paciente_id,
   );
-  const totalCriticas = alertasOrdenadas.filter(
-    (alerta) => alerta.estado_alerta === 'Critico',
-  ).length;
-  const totalAdvertencias = alertasOrdenadas.filter(
-    (alerta) => alerta.estado_alerta === 'Advertencia',
-  ).length;
-  const pacientesAfectados = new Set(alertasOrdenadas.map((alerta) => alerta.paciente_id)).size;
+  const resumenCriticidad = calcularResumenCriticidad(alertasOrdenadas);
+  const pacientesAfectados = calcularPacientesAfectados(alertasOrdenadas);
 
   return (
     <div className="space-y-6">
       <div className="grid gap-3 md:grid-cols-4">
         {[
           ['Pendientes', alertasOrdenadas.length],
-          ['Criticas', totalCriticas],
-          ['Advertencias', totalAdvertencias],
+          ['Criticas', resumenCriticidad.totalCriticas],
+          ['Advertencias', resumenCriticidad.totalAdvertencias],
           ['Pacientes', pacientesAfectados],
         ].map(([etiqueta, valor]) => (
           <div key={etiqueta} className="rounded-lg border border-slate-300 bg-white px-4 py-3">
@@ -230,7 +99,7 @@ export default function PanelDashboardMedico({
         />
 
         <div className="flex flex-wrap gap-2">
-          {(['Todos', 'Critico', 'Advertencia'] as FiltroEstado[]).map((estado) => (
+          {(['Todos', 'Critico', 'Advertencia'] as FiltroEstadoDashboard[]).map((estado) => (
             <button
               key={estado}
               type="button"
