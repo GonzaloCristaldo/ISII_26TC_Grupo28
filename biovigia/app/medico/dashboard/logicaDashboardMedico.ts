@@ -2,7 +2,9 @@ import type { TipoEstadoMedicion, TipoMedicionNombre } from '@/modelos/tipos';
 import type {
   AlertaDashboard,
   FiltroEstadoDashboard,
+  FiltroPacientesDashboard,
   MedicionDashboard,
+  PacienteDashboard,
   ResumenCriticidad,
   TipoMedicionDashboard,
 } from './tiposDashboardMedico';
@@ -114,10 +116,10 @@ export function ordenarMedicionesPorFecha(
 }
 
 export function obtenerHistorialPaciente(
-  alertaSeleccionada: AlertaDashboard | undefined,
+  pacienteId: string,
   historialPorPaciente: Record<string, MedicionDashboard[]>,
 ) {
-  return alertaSeleccionada ? historialPorPaciente[alertaSeleccionada.paciente_id] ?? [] : [];
+  return pacienteId ? historialPorPaciente[pacienteId] ?? [] : [];
 }
 
 export function obtenerTiposPaciente(
@@ -142,6 +144,24 @@ export function obtenerTipoActivo(
     : alertaSeleccionada?.medicion_tipo ?? tipoSeleccionado;
 }
 
+export function obtenerMedicionActual(
+  alertaSeleccionada: AlertaDashboard | undefined,
+  tipoActivo: TipoMedicionNombre,
+  registrosRecientes: MedicionDashboard[],
+): MedicionDashboard | undefined {
+  if (alertaSeleccionada?.medicion_tipo === tipoActivo) {
+    return {
+      id: alertaSeleccionada.medicion_id,
+      paciente_id: alertaSeleccionada.paciente_id,
+      tipo_medicion: alertaSeleccionada.medicion_tipo,
+      valor: alertaSeleccionada.medicion_valor,
+      fecha: alertaSeleccionada.medicion_fecha,
+    };
+  }
+
+  return registrosRecientes[0];
+}
+
 export function calcularResumenCriticidad(alertas: AlertaDashboard[]): ResumenCriticidad {
   return {
     totalCriticas: alertas.filter((alerta) => alerta.estado_alerta === 'Critico').length,
@@ -151,6 +171,43 @@ export function calcularResumenCriticidad(alertas: AlertaDashboard[]): ResumenCr
 
 export function calcularPacientesAfectados(alertas: AlertaDashboard[]) {
   return new Set(alertas.map((alerta) => alerta.paciente_id)).size;
+}
+
+export function obtenerAlertasPaciente(alertas: AlertaDashboard[], pacienteId: string) {
+  return alertas.filter((alerta) => alerta.paciente_id === pacienteId);
+}
+
+export function obtenerEstadoPrioritarioPaciente(
+  alertas: AlertaDashboard[],
+  pacienteId: string,
+): TipoEstadoMedicion | null {
+  return ordenarAlertasPorPrioridad(obtenerAlertasPaciente(alertas, pacienteId))[0]
+    ?.estado_alerta ?? null;
+}
+
+export function filtrarPacientesDashboard(
+  pacientes: PacienteDashboard[],
+  alertas: AlertaDashboard[],
+  filtro: FiltroPacientesDashboard,
+  busqueda: string,
+) {
+  const textoBusqueda = busqueda.trim().toLowerCase();
+
+  return pacientes.filter((paciente) => {
+    const alertasPaciente = obtenerAlertasPaciente(alertas, paciente.id);
+    const coincideBusqueda =
+      textoBusqueda.length === 0 ||
+      paciente.nombreCompleto.toLowerCase().includes(textoBusqueda) ||
+      paciente.contacto?.toLowerCase().includes(textoBusqueda);
+    const coincideFiltro =
+      filtro === 'Todos' ||
+      (filtro === 'ConAlertas' && alertasPaciente.length > 0) ||
+      (filtro === 'Criticos' &&
+        alertasPaciente.some((alerta) => alerta.estado_alerta === 'Critico')) ||
+      (filtro === 'SinAlertas' && alertasPaciente.length === 0);
+
+    return Boolean(coincideBusqueda && coincideFiltro);
+  });
 }
 
 export function obtenerPuntosGrafico(

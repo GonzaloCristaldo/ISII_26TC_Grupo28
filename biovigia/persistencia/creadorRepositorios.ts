@@ -2,16 +2,19 @@ import { RepositorioAlertas } from '@/modelos/repositorios/RepositorioAlertas';
 import { RepositorioAdministracionUsuarios } from '@/modelos/repositorios/RepositorioAdministracionUsuarios';
 import { RepositorioConfiguracionClinica } from '@/modelos/repositorios/RepositorioConfiguracionClinica';
 import { RepositorioMediciones } from '@/modelos/repositorios/RepositorioMediciones';
+import { RepositorioPacientes } from '@/modelos/repositorios/RepositorioPacientes';
 import { RepositorioUmbrales } from '@/modelos/repositorios/RepositorioUmbrales';
 import { RepositorioUsuariosAuth } from '@/modelos/repositorios/RepositorioUsuariosAuth';
 import { PostgresAdministracionUsuariosRepo } from '@/persistencia/postgres/PostgresAdministracionUsuariosRepo';
 import { PostgresAlertasRepo } from '@/persistencia/postgres/PostgresAlertasRepo';
 import { PostgresConfiguracionClinicaRepo } from '@/persistencia/postgres/PostgresConfiguracionClinicaRepo';
 import { PostgresMedicionesRepo } from '@/persistencia/postgres/PostgresMedicionesRepo';
+import { PostgresPacientesRepo } from '@/persistencia/postgres/PostgresPacientesRepo';
 import { PostgresUmbralesRepo } from '@/persistencia/postgres/PostgresUmbralesRepo';
 import { PostgresUsuariosAuthRepo } from '@/persistencia/postgres/PostgresUsuariosAuthRepo';
 import { SupabaseAlertasRepo } from '@/persistencia/supabase/SupabaseAlertasRepo';
 import { SupabaseMedicionesRepo } from '@/persistencia/supabase/SupabaseMedicionesRepo';
+import { SupabasePacientesRepo } from '@/persistencia/supabase/SupabasePacientesRepo';
 import { SupabaseUmbralesRepo } from '@/persistencia/supabase/SupabaseUmbralesRepo';
 
 /*Se intenta juntar aca la creacion de "repositorio de datos" 
@@ -57,6 +60,15 @@ export function crearRepositorioAlertas(): RepositorioAlertas {
       return new PostgresAlertasRepo();
     case 'supabase':
       return new SupabaseAlertasRepo();
+  }
+}
+
+export function crearRepositorioPacientes(): RepositorioPacientes {
+  switch (resolverDriverPersistencia()) {
+    case 'postgres':
+      return new PostgresPacientesRepo();
+    case 'supabase':
+      return new SupabasePacientesRepo();
   }
 }
 

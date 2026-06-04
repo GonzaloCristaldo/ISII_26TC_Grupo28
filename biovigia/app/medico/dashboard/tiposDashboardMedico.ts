@@ -27,7 +27,14 @@ export type TipoMedicionDashboard = {
   unidad: string;
 };
 
+export type PacienteDashboard = {
+  id: string;
+  nombreCompleto: string;
+  contacto: string | null;
+};
+
 export type FiltroEstadoDashboard = 'Todos' | TipoEstadoMedicion;
+export type FiltroPacientesDashboard = 'Todos' | 'ConAlertas' | 'Criticos' | 'SinAlertas';
 
 export type ResumenCriticidad = {
   totalCriticas: number;

@@ -2,14 +2,16 @@ import Link from 'next/link';
 import {
   crearGestorAlertasMedico,
   crearGestorConsultaTiposMedicion,
+  crearGestorPacientesMedico,
 } from '@/app/lib/crearDependencias';
 import { cerrarSesionAccion } from '@/app/auth/accionesAutenticacion';
 import { requerirMedico } from '@/app/lib/session';
-import type { AlertaExtendida, Medicion } from '@/modelos/tipos';
+import type { AlertaExtendida, Medicion, Paciente } from '@/modelos/tipos';
 import PanelDashboardMedico from './PanelDashboardMedico';
 import type {
   AlertaDashboard,
   MedicionDashboard,
+  PacienteDashboard,
   TipoMedicionDashboard,
 } from './tiposDashboardMedico';
 
@@ -39,6 +41,14 @@ function serializarMedicion(medicion: Medicion): MedicionDashboard {
   };
 }
 
+function serializarPaciente(paciente: Paciente): PacienteDashboard {
+  return {
+    id: paciente.id,
+    nombreCompleto: paciente.nombre_completo,
+    contacto: paciente.contacto,
+  };
+}
+
 /**
  * Capa de Presentacion: Dashboard del medico con sesion iniciada.
  */
@@ -48,29 +58,34 @@ export default async function MedicoDashboardPage() {
   let alertasPendientes: AlertaExtendida[] = [];
   const historialPorPaciente: Record<string, MedicionDashboard[]> = {};
   let tiposMedicion: TipoMedicionDashboard[] = [];
+  let pacientesAsignados: PacienteDashboard[] = [];
   let mensajeError: string | null = null;
 
   try {
     const gestorAlertasMedico = crearGestorAlertasMedico();
     const gestorTiposMedicion = crearGestorConsultaTiposMedicion();
-    alertasPendientes = await gestorAlertasMedico.revisarAlertasPendientes(sesion.medicoId!);
-    tiposMedicion = (await gestorTiposMedicion.listarUmbrales()).map((umbral) => ({
+    const gestorPacientesMedico = crearGestorPacientesMedico();
+    const [alertas, umbrales, pacientes] = await Promise.all([
+      gestorAlertasMedico.revisarAlertasPendientes(sesion.medicoId!),
+      gestorTiposMedicion.listarUmbrales(),
+      gestorPacientesMedico.listarPacientesAsignados(sesion.medicoId!),
+    ]);
+
+    alertasPendientes = alertas;
+    tiposMedicion = umbrales.map((umbral) => ({
       tipo_medicion: umbral.tipo_medicion,
       unidad: umbral.unidad,
     }));
-
-    const pacientesConAlertas = Array.from(
-      new Set(alertasPendientes.map((alerta) => alerta.paciente_id)),
-    );
+    pacientesAsignados = pacientes.map(serializarPaciente);
 
     await Promise.all(
-      pacientesConAlertas.map(async (pacienteId) => {
+      pacientesAsignados.map(async (paciente) => {
         try {
-          const historial = await gestorAlertasMedico.revisarHistorialPaciente(pacienteId);
-          historialPorPaciente[pacienteId] = historial.map(serializarMedicion);
+          const historial = await gestorAlertasMedico.revisarHistorialPaciente(paciente.id);
+          historialPorPaciente[paciente.id] = historial.map(serializarMedicion);
         } catch (errorHistorial) {
           console.error('Fallo obteniendo el historial del paciente:', errorHistorial);
-          historialPorPaciente[pacienteId] = [];
+          historialPorPaciente[paciente.id] = [];
         }
       }),
     );
@@ -120,14 +135,11 @@ export default async function MedicoDashboardPage() {
               <h2 className="mb-2 text-lg font-semibold">No se pudo cargar el panel clinico</h2>
               <p className="text-sm">{mensajeError}</p>
             </div>
-          ) : alertasPendientes.length === 0 ? (
-            <div className="col-span-full rounded-2xl border border-dashed border-slate-400 bg-[#f8f5ef] py-16 text-center text-slate-500">
-              No hay eventos pendientes para revisar.
-            </div>
           ) : (
             <PanelDashboardMedico
               alertasPendientes={alertasPendientes.map(serializarAlerta)}
               historialPorPaciente={historialPorPaciente}
+              pacientesAsignados={pacientesAsignados}
               tiposMedicion={tiposMedicion}
             />
           )}
