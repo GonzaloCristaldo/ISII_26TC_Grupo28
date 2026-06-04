@@ -13,7 +13,7 @@ function obtenerMensajeAcceso(rol: RolUsuario) {
     return 'Puede revisar alertas pendientes y consultar el seguimiento de sus pacientes.';
   }
 
-  return 'Puede registrar nuevas mediciones vitales para el seguimiento de su medico responsable.';
+  return 'Puede registrar nuevas mediciones vitales y consultar la evolucion de su seguimiento.';
 }
 
 export default async function Home() {
@@ -60,6 +60,13 @@ export default async function Home() {
                       className="rounded-xl border border-slate-300 px-6 py-3 font-semibold text-slate-700 transition hover:bg-slate-100"
                     >
                       Ver dashboard detallado
+                    </Link>
+                  ) : sesion.rol === 'paciente' ? (
+                    <Link
+                      href="/paciente/dashboard"
+                      className="rounded-xl border border-slate-300 px-6 py-3 font-semibold text-slate-700 transition hover:bg-slate-100"
+                    >
+                      Ver mi dashboard
                     </Link>
                   ) : null}
                   <form action={cerrarSesionAccion}>

@@ -1,4 +1,11 @@
 import type { TipoEstadoMedicion, TipoMedicionNombre } from '@/modelos/tipos';
+import {
+  obtenerFormatoFecha,
+  obtenerNombreMedicion,
+  obtenerPuntosGrafico,
+  obtenerUnidadMedicion,
+  ordenarMedicionesPorFecha,
+} from '@/app/lib/logicaVisualizacionMediciones';
 import type {
   AlertaDashboard,
   FiltroEstadoDashboard,
@@ -6,32 +13,15 @@ import type {
   MedicionDashboard,
   PacienteDashboard,
   ResumenCriticidad,
-  TipoMedicionDashboard,
 } from './tiposDashboardMedico';
 
-export function obtenerUnidadMedicion(
-  tipo: TipoMedicionNombre,
-  tiposMedicion: TipoMedicionDashboard[],
-) {
-  return tiposMedicion.find((tipoMedicion) => tipoMedicion.tipo_medicion === tipo)?.unidad ?? tipo;
-}
-
-export function obtenerNombreMedicion(tipo: TipoMedicionNombre) {
-  return tipo
-    .replace(/[_-]+/g, ' ')
-    .replace(/([a-z])([A-Z])/g, '$1 $2')
-    .trim();
-}
-
-export function obtenerFormatoFecha(fecha: string) {
-  return new Intl.DateTimeFormat('es-AR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(fecha));
-}
+export {
+  obtenerFormatoFecha,
+  obtenerNombreMedicion,
+  obtenerPuntosGrafico,
+  obtenerUnidadMedicion,
+  ordenarMedicionesPorFecha,
+};
 
 export function obtenerTiempoRelativo(fecha: string) {
   const diferenciaMinutos = Math.max(
@@ -102,16 +92,6 @@ export function filtrarAlertasDashboard(
       obtenerNombreMedicion(alerta.medicion_tipo).toLowerCase().includes(textoBusqueda);
 
     return coincideEstado && coincideBusqueda;
-  });
-}
-
-export function ordenarMedicionesPorFecha(
-  mediciones: MedicionDashboard[],
-  direccion: 'asc' | 'desc',
-) {
-  return [...mediciones].sort((a, b) => {
-    const diferencia = new Date(a.fecha).getTime() - new Date(b.fecha).getTime();
-    return direccion === 'asc' ? diferencia : -diferencia;
   });
 }
 
@@ -207,27 +187,5 @@ export function filtrarPacientesDashboard(
       (filtro === 'SinAlertas' && alertasPaciente.length === 0);
 
     return Boolean(coincideBusqueda && coincideFiltro);
-  });
-}
-
-export function obtenerPuntosGrafico(
-  mediciones: MedicionDashboard[],
-  minimo: number,
-  maximo: number,
-) {
-  const margenHorizontal = 8;
-  const margenSuperior = 8;
-  const altoDisponible = 34;
-  const anchoDisponible = 100 - margenHorizontal * 2;
-  const divisorHorizontal = Math.max(mediciones.length - 1, 1);
-
-  return mediciones.map((medicion, indice) => {
-    const proporcionValor = maximo === minimo ? 0.5 : (medicion.valor - minimo) / (maximo - minimo);
-
-    return {
-      medicion,
-      x: margenHorizontal + (indice / divisorHorizontal) * anchoDisponible,
-      y: margenSuperior + (1 - proporcionValor) * altoDisponible,
-    };
   });
 }

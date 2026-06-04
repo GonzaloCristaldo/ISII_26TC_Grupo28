@@ -22,6 +22,10 @@ export interface Medico {
   numero_licencia: string;
 }
 
+export interface PacienteConMedicoResponsable extends Paciente {
+  medico_responsable: Medico;
+}
+
 export interface Medicion {
   id?: string;
   paciente_id: string;
@@ -131,4 +135,10 @@ export interface DatosTipoMedicionConUmbral {
 
 export interface DatosActualizacionTipoMedicionConUmbral extends DatosTipoMedicionConUmbral {
   tipoMedicionId: string;
+}
+
+export interface DatosDashboardPaciente {
+  paciente: PacienteConMedicoResponsable;
+  historial: Medicion[];
+  umbrales: Umbral[];
 }
