@@ -101,7 +101,7 @@ export default async function AlertasPendientesPage() {
 
               return (
                 <article
-                  key={alerta.id}
+                  key={alerta.alerta_id}
                   className="rounded-2xl border border-slate-300 bg-[#f8fafc] p-6"
                 >
                   <div className="flex h-full flex-col">
@@ -164,7 +164,7 @@ export default async function AlertasPendientesPage() {
                           </p>
                         </div>
                         <div className="flex justify-start">
-                          <BotonLeido alertaId={alerta.id!} />
+                          <BotonLeido alertaId={alerta.alerta_id!} />
                         </div>
                       </div>
                     </div>

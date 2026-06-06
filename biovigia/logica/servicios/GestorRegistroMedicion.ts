@@ -38,7 +38,7 @@ export class GestorRegistroMedicion {
     // 2. Guarda la medicion usando el contrato.
     const medicionGuardada = await this.repoMediciones.guardar(datosMedicion);
 
-    if (!medicionGuardada.id) {
+    if (!medicionGuardada.medicion_id) {
       throw new Error('No se pudo confirmar el ID de la medicion al guardar');
     }
 
@@ -50,7 +50,7 @@ export class GestorRegistroMedicion {
     // 4. Crea alerta si es necesario.
     if (estado !== 'Normal') {
       const nuevaAlerta: Alerta = {
-        medicion_id: medicionGuardada.id,
+        medicion_id: medicionGuardada.medicion_id,
         estado_alerta: estado,
         leido_por_medico: false,
         fecha: new Date(),

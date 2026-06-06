@@ -19,7 +19,7 @@ type UsuarioAdministrableRow = {
   especialidad: string | null;
   numero_licencia: string | null;
   contacto: string | null;
-  medico_responsable_id: string | null;
+  paciente_medico_id: string | null;
   medico_responsable_nombre: string | null;
 };
 
@@ -36,7 +36,7 @@ function mapearUsuario(fila: UsuarioAdministrableRow): UsuarioAdministrable {
     especialidad: fila.especialidad,
     numeroLicencia: fila.numero_licencia,
     contacto: fila.contacto,
-    medicoResponsableId: fila.medico_responsable_id,
+    medicoResponsableId: fila.paciente_medico_id,
     medicoResponsableNombre: fila.medico_responsable_nombre,
   };
 }
@@ -45,7 +45,7 @@ export class PostgresAdministracionUsuariosRepo implements RepositorioAdministra
   async listarUsuarios(): Promise<UsuarioAdministrable[]> {
     const query = `
       SELECT
-        u.id AS usuario_id,
+        u.usuario_id,
         u.username,
         r.nombre AS rol,
         u.activo,
@@ -56,15 +56,15 @@ export class PostgresAdministracionUsuariosRepo implements RepositorioAdministra
         m.especialidad,
         m.numero_licencia,
         p.contacto,
-        p.medico_responsable_id,
+        p.medico_id AS paciente_medico_id,
         mr.nombre_completo AS medico_responsable_nombre
       FROM usuarios u
-      JOIN roles r ON r.id = u.rol_id
-      LEFT JOIN usuario_medico um ON um.usuario_id = u.id
-      LEFT JOIN usuario_paciente up ON up.usuario_id = u.id
-      LEFT JOIN medicos m ON m.id = um.medico_id
-      LEFT JOIN pacientes p ON p.id = up.paciente_id
-      LEFT JOIN medicos mr ON mr.id = p.medico_responsable_id
+      JOIN roles r ON r.rol_id = u.rol_id
+      LEFT JOIN usuario_medico um ON um.usuario_id = u.usuario_id
+      LEFT JOIN usuario_paciente up ON up.usuario_id = u.usuario_id
+      LEFT JOIN medicos m ON m.medico_id = um.medico_id
+      LEFT JOIN pacientes p ON p.paciente_id = up.paciente_id
+      LEFT JOIN medicos mr ON mr.medico_id = p.medico_id
       ORDER BY r.nombre ASC, nombre_completo ASC
     `;
 
@@ -79,7 +79,7 @@ export class PostgresAdministracionUsuariosRepo implements RepositorioAdministra
         SET nombre_completo = $2,
             especialidad = $3,
             numero_licencia = $4
-        WHERE id = $1
+        WHERE medico_id = $1
       `,
       [datos.medicoId, datos.nombreCompleto, datos.especialidad, datos.numeroLicencia],
     );
@@ -95,8 +95,8 @@ export class PostgresAdministracionUsuariosRepo implements RepositorioAdministra
         UPDATE pacientes
         SET nombre_completo = $2,
             contacto = $3,
-            medico_responsable_id = $4
-        WHERE id = $1
+            medico_id = $4
+        WHERE paciente_id = $1
       `,
       [datos.pacienteId, datos.nombreCompleto, datos.contacto, datos.medicoResponsableId],
     );
@@ -111,8 +111,8 @@ export class PostgresAdministracionUsuariosRepo implements RepositorioAdministra
       `
         SELECT r.nombre AS rol
         FROM usuarios u
-        JOIN roles r ON r.id = u.rol_id
-        WHERE u.id = $1
+        JOIN roles r ON r.rol_id = u.rol_id
+        WHERE u.usuario_id = $1
         LIMIT 1
       `,
       [usuarioId],
@@ -127,6 +127,6 @@ export class PostgresAdministracionUsuariosRepo implements RepositorioAdministra
       throw new Error('No se puede desactivar una cuenta administradora.');
     }
 
-    await pool.query('UPDATE usuarios SET activo = $2 WHERE id = $1', [usuarioId, activo]);
+    await pool.query('UPDATE usuarios SET activo = $2 WHERE usuario_id = $1', [usuarioId, activo]);
   }
 }

@@ -131,7 +131,7 @@ export function obtenerMedicionActual(
 ): MedicionDashboard | undefined {
   if (alertaSeleccionada?.medicion_tipo === tipoActivo) {
     return {
-      id: alertaSeleccionada.medicion_id,
+      medicion_id: alertaSeleccionada.medicion_id,
       paciente_id: alertaSeleccionada.paciente_id,
       tipo_medicion: alertaSeleccionada.medicion_tipo,
       valor: alertaSeleccionada.medicion_valor,
@@ -174,7 +174,7 @@ export function filtrarPacientesDashboard(
   const textoBusqueda = busqueda.trim().toLowerCase();
 
   return pacientes.filter((paciente) => {
-    const alertasPaciente = obtenerAlertasPaciente(alertas, paciente.id);
+    const alertasPaciente = obtenerAlertasPaciente(alertas, paciente.paciente_id);
     const coincideBusqueda =
       textoBusqueda.length === 0 ||
       paciente.nombreCompleto.toLowerCase().includes(textoBusqueda) ||

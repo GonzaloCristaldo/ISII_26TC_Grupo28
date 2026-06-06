@@ -1,7 +1,7 @@
 import type { TipoEstadoMedicion, TipoMedicionNombre } from '@/modelos/tipos';
 
 export type AlertaDashboard = {
-  id: string;
+  alerta_id: string;
   medicion_id: string;
   estado_alerta: TipoEstadoMedicion;
   leido_por_medico: boolean;
@@ -15,7 +15,7 @@ export type AlertaDashboard = {
 };
 
 export type MedicionDashboard = {
-  id?: string;
+  medicion_id?: string;
   paciente_id: string;
   tipo_medicion: TipoMedicionNombre;
   valor: number;
@@ -28,7 +28,7 @@ export type TipoMedicionDashboard = {
 };
 
 export type PacienteDashboard = {
-  id: string;
+  paciente_id: string;
   nombreCompleto: string;
   contacto: string | null;
 };

@@ -12,7 +12,7 @@ import type {
 
 function serializarPerfil(paciente: PacienteConMedicoResponsable): PerfilDashboardPaciente {
   return {
-    id: paciente.id,
+    paciente_id: paciente.paciente_id,
     nombreCompleto: paciente.nombre_completo,
     contacto: paciente.contacto,
     medicoResponsable: {
@@ -25,7 +25,7 @@ function serializarPerfil(paciente: PacienteConMedicoResponsable): PerfilDashboa
 
 function serializarMedicion(medicion: Medicion): MedicionDashboardPaciente {
   return {
-    id: medicion.id,
+    medicion_id: medicion.medicion_id,
     paciente_id: medicion.paciente_id,
     tipo_medicion: medicion.tipo_medicion,
     valor: medicion.valor,

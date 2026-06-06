@@ -1,7 +1,7 @@
 import type { TipoMedicionNombre } from '@/modelos/tipos';
 
 export type MedicionDashboardPaciente = {
-  id?: string;
+  medicion_id?: string;
   paciente_id: string;
   tipo_medicion: TipoMedicionNombre;
   valor: number;
@@ -14,7 +14,7 @@ export type TipoMedicionDashboardPaciente = {
 };
 
 export type PerfilDashboardPaciente = {
-  id: string;
+  paciente_id: string;
   nombreCompleto: string;
   contacto: string | null;
   medicoResponsable: {

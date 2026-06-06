@@ -574,13 +574,13 @@ export default function PanelUsuariosAdmin({ usuarios, medicos }: Props) {
                         Medico responsable
                       </span>
                       <select
-                        name="medico_responsable_id"
+                        name="medico_id"
                         defaultValue={pacienteSeleccionado.medicoResponsableId ?? ''}
                         required
                         className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-slate-700"
                       >
                         {medicos.map((medico) => (
-                          <option key={medico.id} value={medico.id}>
+                          <option key={medico.medico_id} value={medico.medico_id}>
                             {medico.nombreCompleto} - {medico.especialidad}
                           </option>
                         ))}

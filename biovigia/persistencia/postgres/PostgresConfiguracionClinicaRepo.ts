@@ -7,7 +7,7 @@ import {
 import { pool } from './PostgresCliente';
 
 type TipoMedicionConUmbralRow = {
-  id: string;
+  tipo_medicion_id: string;
   nombre: string;
   unidad: string;
   valor_minimo_normal: string;
@@ -17,7 +17,7 @@ type TipoMedicionConUmbralRow = {
 
 function mapearTipoMedicion(row: TipoMedicionConUmbralRow): TipoMedicionConUmbral {
   return {
-    id: row.id,
+    tipo_medicion_id: row.tipo_medicion_id,
     nombre: row.nombre,
     unidad: row.unidad,
     valor_minimo_normal: parseFloat(row.valor_minimo_normal),
@@ -30,15 +30,15 @@ async function obtenerTipoMedicionConUmbral(tipoMedicionId: string): Promise<Tip
   const resultado = await pool.query<TipoMedicionConUmbralRow>(
     `
       SELECT
-        tm.id,
+        tm.tipo_medicion_id,
         tm.nombre,
         tm.unidad,
         u.valor_minimo_normal,
         u.valor_maximo_normal,
         u.valor_critico
       FROM tipos_medicion tm
-      JOIN umbrales u ON u.tipo_medicion_id = tm.id
-      WHERE tm.id = $1
+      JOIN umbrales u ON u.tipo_medicion_id = tm.tipo_medicion_id
+      WHERE tm.tipo_medicion_id = $1
       LIMIT 1
     `,
     [tipoMedicionId],
@@ -61,15 +61,15 @@ export class PostgresConfiguracionClinicaRepo implements RepositorioConfiguracio
     try {
       await client.query('BEGIN');
 
-      const tipoResultado = await client.query<{ id: string }>(
+      const tipoResultado = await client.query<{ tipo_medicion_id: string }>(
         `
           INSERT INTO tipos_medicion (nombre, unidad)
           VALUES ($1, $2)
-          RETURNING id
+          RETURNING tipo_medicion_id
         `,
         [datos.nombre, datos.unidad],
       );
-      const tipoMedicionId = tipoResultado.rows[0]?.id;
+      const tipoMedicionId = tipoResultado.rows[0]?.tipo_medicion_id;
 
       if (!tipoMedicionId) {
         throw new Error('No se pudo crear el tipo de medicion.');
@@ -116,7 +116,7 @@ export class PostgresConfiguracionClinicaRepo implements RepositorioConfiguracio
           UPDATE tipos_medicion
           SET nombre = $2,
               unidad = $3
-          WHERE id = $1
+          WHERE tipo_medicion_id = $1
         `,
         [datos.tipoMedicionId, datos.nombre, datos.unidad],
       );

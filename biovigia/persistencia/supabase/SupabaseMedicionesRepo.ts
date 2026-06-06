@@ -30,7 +30,7 @@ export class SupabaseMedicionesRepo implements RepositorioMediciones {
     // Simulamos el objeto de vuelta con ID
     return {
       ...m,
-      id: 'mock-uuid-generado'
+      medicion_id: 'mock-uuid-generado'
     };
   }
 
@@ -40,7 +40,7 @@ export class SupabaseMedicionesRepo implements RepositorioMediciones {
     const { data, error } = await supabase
       .from('mediciones')
       .select<{
-        id?: string;
+        medicion_id?: string;
         paciente_id: string;
         tipo_medicion: string;
         valor: number;
@@ -49,7 +49,7 @@ export class SupabaseMedicionesRepo implements RepositorioMediciones {
     if (error) throw new Error(error.message);
 
     return data.map((medicion) => ({
-      id: medicion.id,
+      medicion_id: medicion.medicion_id,
       paciente_id: medicion.paciente_id,
       tipo_medicion: medicion.tipo_medicion,
       valor: medicion.valor,

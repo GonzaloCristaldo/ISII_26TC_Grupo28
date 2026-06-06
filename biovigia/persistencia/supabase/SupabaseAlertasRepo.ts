@@ -23,7 +23,7 @@ export class SupabaseAlertasRepo implements RepositorioAlertas {
 
     return {
       ...a,
-      id: 'alerta-uuid'
+      alerta_id: 'alerta-uuid'
     };
   }
 

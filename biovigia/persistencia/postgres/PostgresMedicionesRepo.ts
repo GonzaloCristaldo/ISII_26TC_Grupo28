@@ -3,7 +3,7 @@ import { Medicion } from '../../modelos/tipos';
 import { pool } from './PostgresCliente';
 
 type MedicionRow = {
-  id: string;
+  medicion_id: string;
   paciente_id: string;
   tipo_medicion: Medicion['tipo_medicion'];
   valor: string;
@@ -17,19 +17,19 @@ export class PostgresMedicionesRepo implements RepositorioMediciones {
   async guardar(m: Medicion): Promise<Medicion> {
     const query = `
       INSERT INTO mediciones (paciente_id, tipo_medicion_id, valor, fecha)
-      SELECT $1, tm.id, $2, $3
+      SELECT $1, tm.tipo_medicion_id, $2, $3
       FROM tipos_medicion tm
       WHERE tm.nombre = $4
       RETURNING (
         SELECT json_build_object(
-          'id', mediciones.id,
+          'medicion_id', mediciones.medicion_id,
           'paciente_id', mediciones.paciente_id,
           'tipo_medicion', tm2.nombre,
           'valor', mediciones.valor,
           'fecha', mediciones.fecha
         )
         FROM tipos_medicion tm2
-        WHERE tm2.id = mediciones.tipo_medicion_id
+        WHERE tm2.tipo_medicion_id = mediciones.tipo_medicion_id
       ) AS medicion
     `;
 
@@ -45,7 +45,7 @@ export class PostgresMedicionesRepo implements RepositorioMediciones {
       }
 
       return {
-        id: nuevaEntrada.id,
+        medicion_id: nuevaEntrada.medicion_id,
         paciente_id: nuevaEntrada.paciente_id,
         tipo_medicion: nuevaEntrada.tipo_medicion,
         valor: parseFloat(nuevaEntrada.valor), // Convertimos numeric de pg
@@ -62,13 +62,13 @@ export class PostgresMedicionesRepo implements RepositorioMediciones {
   async obtenerPorPaciente(pacienteId: string): Promise<Medicion[]> {
     const query = `
       SELECT
-        m.id,
+        m.medicion_id,
         m.paciente_id,
         tm.nombre AS tipo_medicion,
         m.valor,
         m.fecha
       FROM mediciones m
-      JOIN tipos_medicion tm ON tm.id = m.tipo_medicion_id
+      JOIN tipos_medicion tm ON tm.tipo_medicion_id = m.tipo_medicion_id
       WHERE m.paciente_id = $1
       ORDER BY m.fecha DESC
     `;
@@ -76,7 +76,7 @@ export class PostgresMedicionesRepo implements RepositorioMediciones {
     const dbResponse = await pool.query<MedicionRow>(query, [pacienteId]);
 
     return dbResponse.rows.map((row) => ({
-      id: row.id,
+      medicion_id: row.medicion_id,
       paciente_id: row.paciente_id,
       tipo_medicion: row.tipo_medicion,
       valor: parseFloat(row.valor),

@@ -174,7 +174,7 @@ export default function PanelDashboardPaciente({ historial, tiposMedicion }: Pro
                   ) : null}
 
                   {puntosGrafico.map((punto) => (
-                    <g key={punto.medicion.id ?? `${punto.medicion.fecha}-${punto.medicion.valor}`}>
+                    <g key={punto.medicion.medicion_id ?? `${punto.medicion.fecha}-${punto.medicion.valor}`}>
                       <circle
                         cx={punto.x}
                         cy={punto.y}
@@ -216,7 +216,7 @@ export default function PanelDashboardPaciente({ historial, tiposMedicion }: Pro
               <div className="mt-4 grid gap-x-8 gap-y-3 md:grid-cols-2">
                 {registrosRecientes.map((medicion) => (
                   <div
-                    key={medicion.id ?? `${medicion.fecha}-${medicion.valor}`}
+                    key={medicion.medicion_id ?? `${medicion.fecha}-${medicion.valor}`}
                     className="border-b border-slate-100 pb-3"
                   >
                     <p className="font-mono text-xs text-slate-500">

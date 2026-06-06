@@ -191,7 +191,7 @@ function FormularioTipoMedicion({
       }}
       className={`mt-4 grid gap-3 ${esEdicion ? 'md:grid-cols-2' : 'md:grid-cols-5'}`}
     >
-      {tipo ? <input type="hidden" name="tipo_medicion_id" value={tipo.id} /> : null}
+      {tipo ? <input type="hidden" name="tipo_medicion_id" value={tipo.tipo_medicion_id} /> : null}
       <CampoTexto label="Nombre" name="nombre" value={valores.nombre} onChange={actualizarValor} />
       <CampoTexto label="Unidad" name="unidad" value={valores.unidad} onChange={actualizarValor} />
       <CampoNumero
@@ -255,7 +255,7 @@ export default function PanelConfiguracionClinicaAdmin({
           </p>
         ) : (
           tiposMedicion.map((tipo) => (
-            <article key={tipo.id} className="rounded-lg border border-slate-300 bg-white p-5">
+            <article key={tipo.tipo_medicion_id} className="rounded-lg border border-slate-300 bg-white p-5">
               <h3 className="text-xl font-semibold text-slate-950">{tipo.nombre}</h3>
               <FormularioTipoMedicion tipo={tipo} modo="editar" />
             </article>

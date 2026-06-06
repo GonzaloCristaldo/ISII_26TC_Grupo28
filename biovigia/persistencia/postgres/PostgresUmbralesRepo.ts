@@ -22,7 +22,7 @@ export class PostgresUmbralesRepo implements RepositorioUmbrales {
         u.valor_maximo_normal,
         u.valor_critico
       FROM umbrales u
-      JOIN tipos_medicion tm ON tm.id = u.tipo_medicion_id
+      JOIN tipos_medicion tm ON tm.tipo_medicion_id = u.tipo_medicion_id
       ORDER BY tm.nombre ASC
     `;
 
@@ -48,7 +48,7 @@ export class PostgresUmbralesRepo implements RepositorioUmbrales {
         u.valor_maximo_normal,
         u.valor_critico
       FROM umbrales u
-      JOIN tipos_medicion tm ON tm.id = u.tipo_medicion_id
+      JOIN tipos_medicion tm ON tm.tipo_medicion_id = u.tipo_medicion_id
       WHERE tm.nombre = $1
       LIMIT 1
     `;

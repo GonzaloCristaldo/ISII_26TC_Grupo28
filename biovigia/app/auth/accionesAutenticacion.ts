@@ -40,7 +40,7 @@ function parsearDatosRegistroPaciente(formData: FormData) {
   return {
     nombreCompleto: String(formData.get('nombre_completo') ?? '').trim(),
     contacto: String(formData.get('contacto') ?? '').trim(),
-    medicoResponsableId: String(formData.get('medico_responsable_id') ?? '').trim(),
+    medicoResponsableId: String(formData.get('medico_id') ?? '').trim(),
     username: String(formData.get('username') ?? '').trim(),
     password: String(formData.get('password') ?? ''),
   };

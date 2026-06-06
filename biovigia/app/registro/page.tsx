@@ -204,7 +204,7 @@ export default async function RegistroPage({ searchParams }: RegistroPageProps) 
                         Medico responsable
                       </label>
                       <select
-                        name="medico_responsable_id"
+                        name="medico_id"
                         required
                         className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500"
                         defaultValue=""
@@ -213,7 +213,7 @@ export default async function RegistroPage({ searchParams }: RegistroPageProps) 
                           Selecciona un medico
                         </option>
                         {medicos.map((medico) => (
-                          <option key={medico.id} value={medico.id}>
+                          <option key={medico.medico_id} value={medico.medico_id}>
                             {medico.nombreCompleto} - {medico.especialidad}
                           </option>
                         ))}

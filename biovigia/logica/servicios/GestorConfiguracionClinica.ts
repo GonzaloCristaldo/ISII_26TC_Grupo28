@@ -42,7 +42,7 @@ function validarUmbral(datos: DatosTipoMedicionConUmbral) {
 
 function mapearUmbralATipo(umbral: Umbral): TipoMedicionConUmbral {
   return {
-    id: umbral.tipo_medicion_id,
+    tipo_medicion_id: umbral.tipo_medicion_id,
     nombre: umbral.tipo_medicion,
     unidad: umbral.unidad,
     valor_minimo_normal: umbral.valor_minimo_normal,

@@ -48,9 +48,9 @@ export default function PanelDashboardMedico({
   tiposMedicion,
 }: Props) {
   const alertasOrdenadas = ordenarAlertasPorPrioridad(alertasPendientes);
-  const [alertaSeleccionadaId, setAlertaSeleccionadaId] = useState(alertasOrdenadas[0]?.id ?? '');
+  const [alertaSeleccionadaId, setAlertaSeleccionadaId] = useState(alertasOrdenadas[0]?.alerta_id ?? '');
   const [pacienteSeleccionadoId, setPacienteSeleccionadoId] = useState(
-    alertasOrdenadas[0]?.paciente_id ?? pacientesAsignados[0]?.id ?? '',
+    alertasOrdenadas[0]?.paciente_id ?? pacientesAsignados[0]?.paciente_id ?? '',
   );
   const [tipoSeleccionado, setTipoSeleccionado] = useState<TipoMedicionNombre>(
     alertasOrdenadas[0]?.medicion_tipo ?? tiposMedicion[0]?.tipo_medicion ?? '',
@@ -65,10 +65,10 @@ export default function PanelDashboardMedico({
   const alertaSeleccionada =
     alertasOrdenadas.find(
       (alerta) =>
-        alerta.id === alertaSeleccionadaId && alerta.paciente_id === pacienteSeleccionadoId,
+        alerta.alerta_id === alertaSeleccionadaId && alerta.paciente_id === pacienteSeleccionadoId,
     ) ?? alertasOrdenadas.find((alerta) => alerta.paciente_id === pacienteSeleccionadoId);
   const pacienteSeleccionado = pacientesAsignados.find(
-    (paciente) => paciente.id === pacienteSeleccionadoId,
+    (paciente) => paciente.paciente_id === pacienteSeleccionadoId,
   );
   const historialPaciente = obtenerHistorialPaciente(
     pacienteSeleccionadoId,
@@ -117,7 +117,7 @@ export default function PanelDashboardMedico({
     const historial = historialPorPaciente[pacienteId] ?? [];
 
     setPacienteSeleccionadoId(pacienteId);
-    setAlertaSeleccionadaId(alertaPrioritaria?.id ?? '');
+    setAlertaSeleccionadaId(alertaPrioritaria?.alerta_id ?? '');
     setTipoSeleccionado(
       alertaPrioritaria?.medicion_tipo ?? historial[0]?.tipo_medicion ?? tiposMedicion[0]?.tipo_medicion ?? '',
     );
@@ -192,11 +192,11 @@ export default function PanelDashboardMedico({
             ) : (
               alertasFiltradas.map((alerta, indice) => {
                 const clasesEstado = obtenerClasesEstado(alerta.estado_alerta);
-                const estaSeleccionada = alerta.id === alertaSeleccionada?.id;
+                const estaSeleccionada = alerta.alerta_id === alertaSeleccionada?.alerta_id;
 
                 return (
                   <article
-                    key={alerta.id}
+                    key={alerta.alerta_id}
                     className={`rounded-lg border bg-white transition ${
                       estaSeleccionada
                         ? clasesEstado.seleccionado
@@ -206,7 +206,7 @@ export default function PanelDashboardMedico({
                     <button
                       type="button"
                       onClick={() => {
-                        setAlertaSeleccionadaId(alerta.id);
+                        setAlertaSeleccionadaId(alerta.alerta_id);
                         setPacienteSeleccionadoId(alerta.paciente_id);
                         setTipoSeleccionado(alerta.medicion_tipo);
                       }}
@@ -242,7 +242,7 @@ export default function PanelDashboardMedico({
                     </button>
 
                     <div className="border-t border-slate-200 px-4 py-3">
-                      <BotonLeido alertaId={alerta.id} />
+                      <BotonLeido alertaId={alerta.alerta_id} />
                     </div>
                   </article>
                 );
@@ -394,7 +394,7 @@ export default function PanelDashboardMedico({
                         ) : null}
 
                         {puntosGrafico.map((punto) => (
-                          <g key={punto.medicion.id ?? `${punto.medicion.fecha}-${punto.medicion.valor}`}>
+                          <g key={punto.medicion.medicion_id ?? `${punto.medicion.fecha}-${punto.medicion.valor}`}>
                             <circle
                               cx={punto.x}
                               cy={punto.y}
@@ -442,7 +442,7 @@ export default function PanelDashboardMedico({
                     ) : (
                       registrosRecientes.map((medicion) => (
                         <div
-                          key={medicion.id ?? `${medicion.fecha}-${medicion.valor}`}
+                          key={medicion.medicion_id ?? `${medicion.fecha}-${medicion.valor}`}
                           className="border-b border-slate-100 pb-3 last:border-b-0 last:pb-0"
                         >
                           <p className="font-mono text-xs text-slate-500">
@@ -522,18 +522,18 @@ export default function PanelDashboardMedico({
               </p>
             ) : (
               pacientesPaginados.map((paciente) => {
-                const alertasPaciente = obtenerAlertasPaciente(alertasOrdenadas, paciente.id);
+                const alertasPaciente = obtenerAlertasPaciente(alertasOrdenadas, paciente.paciente_id);
                 const estadoPrioritario = obtenerEstadoPrioritarioPaciente(
                   alertasOrdenadas,
-                  paciente.id,
+                  paciente.paciente_id,
                 );
-                const seleccionado = paciente.id === pacienteSeleccionadoId;
+                const seleccionado = paciente.paciente_id === pacienteSeleccionadoId;
 
                 return (
                   <button
-                    key={paciente.id}
+                    key={paciente.paciente_id}
                     type="button"
-                    onClick={() => seleccionarPaciente(paciente.id)}
+                    onClick={() => seleccionarPaciente(paciente.paciente_id)}
                     className={`mb-2 w-full rounded-lg border px-3 py-3 text-left transition last:mb-0 ${
                       seleccionado
                         ? 'border-slate-900 bg-slate-900 text-white'

@@ -17,7 +17,7 @@ import type {
 
 function serializarAlerta(alerta: AlertaExtendida): AlertaDashboard {
   return {
-    id: alerta.id ?? alerta.medicion_id,
+    alerta_id: alerta.alerta_id ?? alerta.medicion_id,
     medicion_id: alerta.medicion_id,
     estado_alerta: alerta.estado_alerta,
     leido_por_medico: alerta.leido_por_medico,
@@ -33,7 +33,7 @@ function serializarAlerta(alerta: AlertaExtendida): AlertaDashboard {
 
 function serializarMedicion(medicion: Medicion): MedicionDashboard {
   return {
-    id: medicion.id,
+    medicion_id: medicion.medicion_id,
     paciente_id: medicion.paciente_id,
     tipo_medicion: medicion.tipo_medicion,
     valor: medicion.valor,
@@ -43,7 +43,7 @@ function serializarMedicion(medicion: Medicion): MedicionDashboard {
 
 function serializarPaciente(paciente: Paciente): PacienteDashboard {
   return {
-    id: paciente.id,
+    paciente_id: paciente.paciente_id,
     nombreCompleto: paciente.nombre_completo,
     contacto: paciente.contacto,
   };
@@ -81,11 +81,11 @@ export default async function MedicoDashboardPage() {
     await Promise.all(
       pacientesAsignados.map(async (paciente) => {
         try {
-          const historial = await gestorAlertasMedico.revisarHistorialPaciente(paciente.id);
-          historialPorPaciente[paciente.id] = historial.map(serializarMedicion);
+          const historial = await gestorAlertasMedico.revisarHistorialPaciente(paciente.paciente_id);
+          historialPorPaciente[paciente.paciente_id] = historial.map(serializarMedicion);
         } catch (errorHistorial) {
           console.error('Fallo obteniendo el historial del paciente:', errorHistorial);
-          historialPorPaciente[paciente.id] = [];
+          historialPorPaciente[paciente.paciente_id] = [];
         }
       }),
     );

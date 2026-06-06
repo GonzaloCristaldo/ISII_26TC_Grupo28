@@ -45,7 +45,7 @@ export async function registrarPacienteAdminAccion(formData: FormData) {
   await gestor.registrarPaciente({
     nombreCompleto: texto(formData, 'nombre_completo'),
     contacto: texto(formData, 'contacto'),
-    medicoResponsableId: texto(formData, 'medico_responsable_id'),
+    medicoResponsableId: texto(formData, 'medico_id'),
     username: texto(formData, 'username'),
     password: String(formData.get('password') ?? ''),
   });
@@ -75,7 +75,7 @@ export async function actualizarPacienteAdminAccion(formData: FormData) {
     pacienteId: texto(formData, 'paciente_id'),
     nombreCompleto: texto(formData, 'nombre_completo'),
     contacto: texto(formData, 'contacto'),
-    medicoResponsableId: texto(formData, 'medico_responsable_id'),
+    medicoResponsableId: texto(formData, 'medico_id'),
   });
 
   revalidarVistasAdministradas();

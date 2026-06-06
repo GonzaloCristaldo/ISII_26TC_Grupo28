@@ -1,27 +1,27 @@
 -- Datos iniciales para el esquema academico.
 
-INSERT INTO roles (id, nombre) VALUES
+INSERT INTO roles (rol_id, nombre) VALUES
   ('7d696604-c2ce-47b1-ae2d-72c8ff8f86f1', 'medico'),
   ('6da368fb-2d8d-4d39-8de6-e75e70ca9018', 'paciente'),
   ('82be8d86-9e52-4e2e-9a62-9a17b2e61335', 'administrador')
 ON CONFLICT (nombre) DO NOTHING;
 
-INSERT INTO estados_alerta (id, descripcion) VALUES
+INSERT INTO estados_alerta (estado_alerta_id, descripcion) VALUES
   ('f575778a-c264-4755-b5ee-95ab69f7d8df', 'Normal'),
   ('94f5eff5-a93d-4787-9d0e-ac94a412e920', 'Advertencia'),
   ('0dfab290-a31e-49fd-86e7-7f87f4191b44', 'Critico')
 ON CONFLICT (descripcion) DO NOTHING;
 
-INSERT INTO tipos_medicion (id, nombre, unidad) VALUES
+INSERT INTO tipos_medicion (tipo_medicion_id, nombre, unidad) VALUES
   ('5cf4ad39-700d-4cd8-8377-4ecce758e3df', 'PresionArterial', 'mmHg'),
   ('fdd8e652-7a9f-4bc2-afec-d47876ef64a8', 'Glucosa', 'mg/dL')
 ON CONFLICT (nombre) DO NOTHING;
 
-INSERT INTO medicos (id, nombre_completo, especialidad, numero_licencia)
+INSERT INTO medicos (medico_id, nombre_completo, especialidad, numero_licencia)
 VALUES ('3d5a4435-0275-430c-99e2-ab001ac0aa3f', 'Dra. Laura Gomez', 'Medicina General', 'MN-1001')
 ON CONFLICT DO NOTHING;
 
-INSERT INTO pacientes (id, nombre_completo, contacto, medico_responsable_id)
+INSERT INTO pacientes (paciente_id, nombre_completo, contacto, medico_id)
 VALUES (
   'e5b87140-5712-4c2f-b4de-1a221f00a581',
   'Sofia Martinez',
@@ -30,7 +30,7 @@ VALUES (
 )
 ON CONFLICT DO NOTHING;
 
-INSERT INTO usuarios (id, username, password_hash, rol_id)
+INSERT INTO usuarios (usuario_id, username, password_hash, rol_id)
 VALUES (
   '61bbfb11-4045-4d49-873b-54401a5d1349',
   'admin',
@@ -39,7 +39,7 @@ VALUES (
 )
 ON CONFLICT (username) DO NOTHING;
 
-INSERT INTO usuarios (id, username, password_hash, rol_id)
+INSERT INTO usuarios (usuario_id, username, password_hash, rol_id)
 VALUES (
   'f2fdb3d8-4f6d-481e-b08a-76f858d1f2f7',
   'laura.gomez',
@@ -48,7 +48,7 @@ VALUES (
 )
 ON CONFLICT (username) DO NOTHING;
 
-INSERT INTO usuarios (id, username, password_hash, rol_id)
+INSERT INTO usuarios (usuario_id, username, password_hash, rol_id)
 VALUES (
   '7ef9f957-b4a0-4dd4-9f6f-2d689d8ef2d5',
   'sofia.martinez',

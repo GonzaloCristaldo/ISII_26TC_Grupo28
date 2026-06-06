@@ -3,20 +3,20 @@ export type TipoMedicionNombre = string;
 export type RolUsuario = 'medico' | 'paciente' | 'administrador';
 
 export interface TipoMedicion {
-  id: string;
+  tipo_medicion_id: string;
   nombre: TipoMedicionNombre;
   unidad: string;
 }
 
 export interface Paciente {
-  id: string;
+  paciente_id: string;
   nombre_completo: string;
   contacto: string | null;
-  medico_responsable_id: string;
+  medico_id: string;
 }
 
 export interface Medico {
-  id: string;
+  medico_id: string;
   nombre_completo: string;
   especialidad: string;
   numero_licencia: string;
@@ -27,7 +27,7 @@ export interface PacienteConMedicoResponsable extends Paciente {
 }
 
 export interface Medicion {
-  id?: string;
+  medicion_id?: string;
   paciente_id: string;
   tipo_medicion: TipoMedicionNombre;
   valor: number;
@@ -35,7 +35,7 @@ export interface Medicion {
 }
 
 export interface Alerta {
-  id?: string;
+  alerta_id?: string;
   medicion_id: string;
   estado_alerta: TipoEstadoMedicion;
   leido_por_medico: boolean;
@@ -84,7 +84,7 @@ export interface UsuarioAdministrable extends UsuarioSesion {
 }
 
 export interface MedicoRegistrable {
-  id: string;
+  medico_id: string;
   nombreCompleto: string;
   especialidad: string;
 }
