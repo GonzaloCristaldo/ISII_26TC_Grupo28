@@ -1,5 +1,3 @@
--- Migracion para aceptar login.
--- Ejecutar sobre una base ya existente antes de volver a correr datos_iniciales.sql si hiciera falta.
 
 BEGIN;
 
@@ -71,18 +69,18 @@ INSERT INTO roles (rol_id, nombre) VALUES
   ('7d696604-c2ce-47b1-ae2d-72c8ff8f86f1', 'medico'),
   ('6da368fb-2d8d-4d39-8de6-e75e70ca9018', 'paciente'),
   ('82be8d86-9e52-4e2e-9a62-9a17b2e61335', 'administrador')
-ON CONFLICT (nombre) DO NOTHING;
+ON CONFLICT DO NOTHING;
 
 INSERT INTO estados_alerta (estado_alerta_id, descripcion) VALUES
   ('f575778a-c264-4755-b5ee-95ab69f7d8df', 'Normal'),
   ('94f5eff5-a93d-4787-9d0e-ac94a412e920', 'Advertencia'),
   ('0dfab290-a31e-49fd-86e7-7f87f4191b44', 'Critico')
-ON CONFLICT (descripcion) DO NOTHING;
+ON CONFLICT DO NOTHING;
 
 INSERT INTO tipos_medicion (tipo_medicion_id, nombre, unidad) VALUES
   ('5cf4ad39-700d-4cd8-8377-4ecce758e3df', 'PresionArterial', 'mmHg'),
   ('fdd8e652-7a9f-4bc2-afec-d47876ef64a8', 'Glucosa', 'mg/dL')
-ON CONFLICT (nombre) DO NOTHING;
+ON CONFLICT DO NOTHING;
 
 ALTER TABLE mediciones ADD COLUMN IF NOT EXISTS tipo_medicion_id UUID;
 DO $$

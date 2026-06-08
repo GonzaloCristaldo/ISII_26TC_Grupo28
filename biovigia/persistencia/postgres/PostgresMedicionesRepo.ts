@@ -1,5 +1,9 @@
-import { RepositorioMediciones } from '../../modelos/repositorios/RepositorioMediciones';
-import { Medicion } from '../../modelos/tipos';
+import {
+  RepositorioMediciones,
+  RepositorioRegistroMedicionAtomico,
+  ResultadoRegistroMedicion,
+} from '../../modelos/repositorios/RepositorioMediciones';
+import { Medicion, TipoEstadoMedicion } from '../../modelos/tipos';
 import { pool } from './PostgresCliente';
 
 type MedicionRow = {
@@ -13,7 +17,12 @@ type MedicionRow = {
  * Repositorio de Mediciones para PostgreSQL en local (puede cambiarse a supabase?).
  * Siguiendo la teoria, de que no debe conocer nada sobre React ni variables globales.
  */
-export class PostgresMedicionesRepo implements RepositorioMediciones {
+type ResultadoRegistroMedicionRow = MedicionRow & {
+  alerta_generada: boolean;
+};
+
+export class PostgresMedicionesRepo
+  implements RepositorioMediciones, RepositorioRegistroMedicionAtomico {
   async guardar(m: Medicion): Promise<Medicion> {
     const query = `
       INSERT INTO mediciones (paciente_id, tipo_medicion_id, valor, fecha)
@@ -59,18 +68,53 @@ export class PostgresMedicionesRepo implements RepositorioMediciones {
     }
   }
 
+  async registrarMedicionConResultado(
+    medicion: Medicion,
+    estado: TipoEstadoMedicion,
+  ): Promise<ResultadoRegistroMedicion> {
+    const query = `
+      SELECT *
+      FROM fn_registrar_medicion_con_alerta($1, $2, $3, $4, $5)
+    `;
+
+    const valores = [
+      medicion.paciente_id,
+      medicion.tipo_medicion,
+      medicion.valor,
+      medicion.fecha.toISOString(),
+      estado,
+    ];
+
+    try {
+      const respuesta = await pool.query<ResultadoRegistroMedicionRow>(query, valores);
+      const fila = respuesta.rows[0];
+
+      if (!fila) {
+        throw new Error('No se pudo registrar la medicion en PostgreSQL.');
+      }
+
+      return {
+        medicion: {
+          medicion_id: fila.medicion_id,
+          paciente_id: fila.paciente_id,
+          tipo_medicion: fila.tipo_medicion,
+          valor: parseFloat(fila.valor),
+          fecha: new Date(fila.fecha),
+        },
+        alertaGenerada: fila.alerta_generada,
+      };
+    } catch (error: unknown) {
+      console.error('Postgres error registrando medicion con resultado:', error);
+      const message =
+        error instanceof Error ? error.message : 'Error desconocido registrando en PostgreSQL';
+      throw new Error(`Error registrando medicion en Postgres: ${message}`);
+    }
+  }
+
   async obtenerPorPaciente(pacienteId: string): Promise<Medicion[]> {
     const query = `
-      SELECT
-        m.medicion_id,
-        m.paciente_id,
-        tm.nombre AS tipo_medicion,
-        m.valor,
-        m.fecha
-      FROM mediciones m
-      JOIN tipos_medicion tm ON tm.tipo_medicion_id = m.tipo_medicion_id
-      WHERE m.paciente_id = $1
-      ORDER BY m.fecha DESC
+      SELECT *
+      FROM fn_historial_mediciones_paciente($1)
     `;
 
     const dbResponse = await pool.query<MedicionRow>(query, [pacienteId]);

@@ -18,14 +18,8 @@ type PacienteConMedicoRow = PacienteRow & {
 export class PostgresPacientesRepo implements RepositorioPacientes {
   async obtenerAsignadosPorMedico(medicoId: string): Promise<Paciente[]> {
     const query = `
-      SELECT
-        p.paciente_id,
-        p.nombre_completo,
-        p.contacto,
-        p.medico_id
-      FROM pacientes p
-      WHERE p.medico_id = $1
-      ORDER BY p.nombre_completo ASC
+      SELECT *
+      FROM fn_pacientes_asignados_medico($1)
     `;
 
     const respuesta = await pool.query<PacienteRow>(query, [medicoId]);

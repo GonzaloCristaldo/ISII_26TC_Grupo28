@@ -1,4 +1,4 @@
-import { Medicion } from '../tipos';
+import { Medicion, TipoEstadoMedicion } from '../tipos';
 
 /**
  * Aca se define las operaciones que puede realizar la capa
@@ -17,4 +17,25 @@ export interface RepositorioMediciones {
    * @param pacienteId UUID del paciente
    */
   obtenerPorPaciente(pacienteId: string): Promise<Medicion[]>;
+}
+
+export interface ResultadoRegistroMedicion {
+  medicion: Medicion;
+  alertaGenerada: boolean;
+}
+
+export interface RepositorioRegistroMedicionAtomico {
+  registrarMedicionConResultado(
+    medicion: Medicion,
+    estado: TipoEstadoMedicion,
+  ): Promise<ResultadoRegistroMedicion>;
+}
+
+export function soportaRegistroMedicionAtomico(
+  repo: RepositorioMediciones,
+): repo is RepositorioMediciones & RepositorioRegistroMedicionAtomico {
+  return (
+    typeof (repo as Partial<RepositorioRegistroMedicionAtomico>)
+      .registrarMedicionConResultado === 'function'
+  );
 }

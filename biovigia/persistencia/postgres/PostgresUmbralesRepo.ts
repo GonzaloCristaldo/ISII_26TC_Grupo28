@@ -14,16 +14,8 @@ type UmbralRow = {
 export class PostgresUmbralesRepo implements RepositorioUmbrales {
   async listar(): Promise<Umbral[]> {
     const query = `
-      SELECT
-        u.tipo_medicion_id,
-        tm.nombre AS tipo_medicion,
-        tm.unidad,
-        u.valor_minimo_normal,
-        u.valor_maximo_normal,
-        u.valor_critico
-      FROM umbrales u
-      JOIN tipos_medicion tm ON tm.tipo_medicion_id = u.tipo_medicion_id
-      ORDER BY tm.nombre ASC
+      SELECT *
+      FROM fn_listar_umbrales()
     `;
 
     const respuesta = await pool.query<UmbralRow>(query);
@@ -40,17 +32,8 @@ export class PostgresUmbralesRepo implements RepositorioUmbrales {
 
   async obtenerPorTipo(tipoMedicion: Medicion['tipo_medicion']): Promise<Umbral | null> {
     const query = `
-      SELECT
-        u.tipo_medicion_id,
-        tm.nombre AS tipo_medicion,
-        tm.unidad,
-        u.valor_minimo_normal,
-        u.valor_maximo_normal,
-        u.valor_critico
-      FROM umbrales u
-      JOIN tipos_medicion tm ON tm.tipo_medicion_id = u.tipo_medicion_id
-      WHERE tm.nombre = $1
-      LIMIT 1
+      SELECT *
+      FROM fn_obtener_umbral_por_tipo($1)
     `;
 
     const respuesta = await pool.query<UmbralRow>(query, [tipoMedicion]);

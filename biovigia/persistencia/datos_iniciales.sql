@@ -1,4 +1,4 @@
--- Datos iniciales para el esquema academico.
+-- Datos iniciales para el esquema.
 
 INSERT INTO roles (rol_id, nombre) VALUES
   ('7d696604-c2ce-47b1-ae2d-72c8ff8f86f1', 'medico'),

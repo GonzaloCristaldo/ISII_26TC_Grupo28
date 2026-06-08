@@ -1,4 +1,7 @@
-import { RepositorioMediciones } from '../../modelos/repositorios/RepositorioMediciones';
+import {
+  RepositorioMediciones,
+  soportaRegistroMedicionAtomico,
+} from '../../modelos/repositorios/RepositorioMediciones';
 import { RepositorioAlertas } from '../../modelos/repositorios/RepositorioAlertas';
 import { RepositorioUmbrales } from '../../modelos/repositorios/RepositorioUmbrales';
 import { Medicion, Alerta } from '../../modelos/tipos';
@@ -35,15 +38,19 @@ export class GestorRegistroMedicion {
     // 1. Validar que la medicion sea fisicamente posible para un ser humano.
     validarLimitesBiologicos(datosMedicion.tipo_medicion, datosMedicion.valor, umbral);
 
-    // 2. Guarda la medicion usando el contrato.
+    // 2. Evalua bajo reglas medicas antes de persistir.
+    const estado = evaluarMedicion(datosMedicion, umbral);
+
+    if (soportaRegistroMedicionAtomico(this.repoMediciones)) {
+      return this.repoMediciones.registrarMedicionConResultado(datosMedicion, estado);
+    }
+
+    // 3. Guarda la medicion usando el contrato.
     const medicionGuardada = await this.repoMediciones.guardar(datosMedicion);
 
     if (!medicionGuardada.medicion_id) {
       throw new Error('No se pudo confirmar el ID de la medicion al guardar');
     }
-
-    // 3. Evalua bajo reglas medicas.
-    const estado = evaluarMedicion(medicionGuardada, umbral);
 
     let alertaGenerada = false;
 
