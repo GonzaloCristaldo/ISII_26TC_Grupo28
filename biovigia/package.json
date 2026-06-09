@@ -9,7 +9,9 @@
     "lint": "eslint",
     "test:unit": "vitest run tests/unit",
     "test:unit:watch": "vitest tests/unit",
-    "test:unit:passes": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-unit-test-passes.ps1"
+    "test:unit:passes": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-unit-test-passes.ps1",
+    "script:core-flows": "tsx scripts/core-flow-scenarios.ts",
+    "script:core-flows:passes": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-core-flow-passes.ps1"
   },
   "dependencies": {
     "dotenv": "^17.3.1",
@@ -28,6 +30,8 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.1",
     "tailwindcss": "^4",
+    "tsx": "^4.22.4",
+    "tsx": "^4.21.0",
     "typescript": "^5",
     "vitest": "^4.1.8"
   }
