@@ -13,10 +13,18 @@ import type {
 function serializarPerfil(paciente: PacienteConMedicoResponsable): PerfilDashboardPaciente {
   return {
     paciente_id: paciente.paciente_id,
-    nombreCompleto: paciente.nombre_completo,
-    contacto: paciente.contacto,
+    nombreCompleto: [paciente.nombre, paciente.apellido].filter(Boolean).join(' '),
+    email: paciente.email,
+    telefono: paciente.telefono,
+    fechaNacimiento: paciente.fecha_nacimiento?.toISOString().slice(0, 10) ?? null,
+    grupoSanguineo: paciente.grupo_sanguineo,
     medicoResponsable: {
-      nombreCompleto: paciente.medico_responsable.nombre_completo,
+      nombreCompleto: [
+        paciente.medico_responsable.nombre,
+        paciente.medico_responsable.apellido,
+      ]
+        .filter(Boolean)
+        .join(' '),
       especialidad: paciente.medico_responsable.especialidad,
       numeroLicencia: paciente.medico_responsable.numero_licencia,
     },
@@ -128,10 +136,18 @@ export default async function DashboardPacientePage() {
               </div>
               <div className="border-t border-slate-200 pt-4 md:border-l md:border-t-0 md:pl-5 md:pt-0">
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                  Contacto registrado
+                  Datos del paciente
                 </p>
                 <p className="mt-2 break-words text-sm font-semibold text-slate-950">
-                  {perfil.contacto ?? 'Sin contacto registrado'}
+                  {perfil.email ?? perfil.telefono ?? 'Sin email o telefono'}
+                </p>
+                <p className="mt-1 text-xs text-slate-500">
+                  {perfil.grupoSanguineo ? `Grupo ${perfil.grupoSanguineo}` : 'Grupo no informado'}
+                  {perfil.fechaNacimiento
+                    ? ` - Nacimiento ${new Intl.DateTimeFormat('es-AR').format(
+                        new Date(`${perfil.fechaNacimiento}T00:00:00`),
+                      )}`
+                    : ''}
                 </p>
               </div>
             </section>

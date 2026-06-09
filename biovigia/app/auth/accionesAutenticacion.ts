@@ -5,6 +5,7 @@ import { crearGestorAutenticacion } from '@/app/lib/crearDependencias';
 import { destinoPorRol } from '@/app/lib/destinos';
 import { crearSesion, destruirSesion, obtenerSesionActual } from '@/app/lib/session';
 import { esErrorUnico } from '@/logica/errores/erroresPersistencia';
+import type { GrupoSanguineo } from '@/modelos/tipos';
 import {
   validarDatosLogin,
   validarDatosRegistroMedico,
@@ -28,8 +29,11 @@ function parsearDatosLogin(formData: FormData) {
 
 function parsearDatosRegistroMedico(formData: FormData) {
   return {
-    nombreCompleto: String(formData.get('nombre_completo') ?? '').trim(),
-    especialidad: String(formData.get('especialidad') ?? '').trim(),
+    nombre: String(formData.get('nombre') ?? '').trim(),
+    apellido: String(formData.get('apellido') ?? '').trim(),
+    email: String(formData.get('email') ?? '').trim() || null,
+    telefono: String(formData.get('telefono') ?? '').trim() || null,
+    especialidadId: String(formData.get('especialidad_id') ?? '').trim(),
     numeroLicencia: String(formData.get('numero_licencia') ?? '').trim(),
     username: String(formData.get('username') ?? '').trim(),
     password: String(formData.get('password') ?? ''),
@@ -38,8 +42,12 @@ function parsearDatosRegistroMedico(formData: FormData) {
 
 function parsearDatosRegistroPaciente(formData: FormData) {
   return {
-    nombreCompleto: String(formData.get('nombre_completo') ?? '').trim(),
-    contacto: String(formData.get('contacto') ?? '').trim(),
+    nombre: String(formData.get('nombre') ?? '').trim(),
+    apellido: String(formData.get('apellido') ?? '').trim(),
+    email: String(formData.get('email') ?? '').trim() || null,
+    telefono: String(formData.get('telefono') ?? '').trim() || null,
+    fechaNacimiento: String(formData.get('fecha_nacimiento') ?? '').trim() || null,
+    grupoSanguineo: (String(formData.get('grupo_sanguineo') ?? '').trim() || null) as GrupoSanguineo | null,
     medicoResponsableId: String(formData.get('medico_id') ?? '').trim(),
     username: String(formData.get('username') ?? '').trim(),
     password: String(formData.get('password') ?? ''),

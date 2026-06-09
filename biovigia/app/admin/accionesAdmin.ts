@@ -4,11 +4,21 @@ import { revalidatePath } from 'next/cache';
 import {
   crearGestorAdministracionUsuarios,
   crearGestorConfiguracionClinica,
+  crearGestorEspecialidades,
 } from '@/app/lib/crearDependencias';
 import { requerirAdministrador } from '@/app/lib/session';
+import type { GrupoSanguineo } from '@/modelos/tipos';
 
 function texto(formData: FormData, campo: string) {
   return String(formData.get(campo) ?? '').trim();
+}
+
+function textoOpcional(formData: FormData, campo: string) {
+  return texto(formData, campo) || null;
+}
+
+function grupoSanguineo(formData: FormData) {
+  return textoOpcional(formData, 'grupo_sanguineo') as GrupoSanguineo | null;
 }
 
 function numero(formData: FormData, campo: string) {
@@ -28,8 +38,11 @@ export async function registrarMedicoAdminAccion(formData: FormData) {
   const gestor = crearGestorAdministracionUsuarios();
 
   await gestor.registrarMedico({
-    nombreCompleto: texto(formData, 'nombre_completo'),
-    especialidad: texto(formData, 'especialidad'),
+    nombre: texto(formData, 'nombre'),
+    apellido: texto(formData, 'apellido'),
+    email: textoOpcional(formData, 'email'),
+    telefono: textoOpcional(formData, 'telefono'),
+    especialidadId: texto(formData, 'especialidad_id'),
     numeroLicencia: texto(formData, 'numero_licencia'),
     username: texto(formData, 'username'),
     password: String(formData.get('password') ?? ''),
@@ -43,8 +56,12 @@ export async function registrarPacienteAdminAccion(formData: FormData) {
   const gestor = crearGestorAdministracionUsuarios();
 
   await gestor.registrarPaciente({
-    nombreCompleto: texto(formData, 'nombre_completo'),
-    contacto: texto(formData, 'contacto'),
+    nombre: texto(formData, 'nombre'),
+    apellido: texto(formData, 'apellido'),
+    email: textoOpcional(formData, 'email'),
+    telefono: textoOpcional(formData, 'telefono'),
+    fechaNacimiento: textoOpcional(formData, 'fecha_nacimiento'),
+    grupoSanguineo: grupoSanguineo(formData),
     medicoResponsableId: texto(formData, 'medico_id'),
     username: texto(formData, 'username'),
     password: String(formData.get('password') ?? ''),
@@ -59,8 +76,11 @@ export async function actualizarMedicoAdminAccion(formData: FormData) {
 
   await gestor.actualizarMedico({
     medicoId: texto(formData, 'medico_id'),
-    nombreCompleto: texto(formData, 'nombre_completo'),
-    especialidad: texto(formData, 'especialidad'),
+    nombre: texto(formData, 'nombre'),
+    apellido: texto(formData, 'apellido'),
+    email: textoOpcional(formData, 'email'),
+    telefono: textoOpcional(formData, 'telefono'),
+    especialidadId: texto(formData, 'especialidad_id'),
     numeroLicencia: texto(formData, 'numero_licencia'),
   });
 
@@ -73,8 +93,12 @@ export async function actualizarPacienteAdminAccion(formData: FormData) {
 
   await gestor.actualizarPaciente({
     pacienteId: texto(formData, 'paciente_id'),
-    nombreCompleto: texto(formData, 'nombre_completo'),
-    contacto: texto(formData, 'contacto'),
+    nombre: texto(formData, 'nombre'),
+    apellido: texto(formData, 'apellido'),
+    email: textoOpcional(formData, 'email'),
+    telefono: textoOpcional(formData, 'telefono'),
+    fechaNacimiento: textoOpcional(formData, 'fecha_nacimiento'),
+    grupoSanguineo: grupoSanguineo(formData),
     medicoResponsableId: texto(formData, 'medico_id'),
   });
 
@@ -89,6 +113,17 @@ export async function cambiarEstadoUsuarioAdminAccion(formData: FormData) {
     texto(formData, 'usuario_id'),
     texto(formData, 'activo') === 'true',
   );
+
+  revalidarVistasAdministradas();
+}
+
+export async function crearEspecialidadAdminAccion(formData: FormData) {
+  await requerirAdministrador();
+  const gestor = crearGestorEspecialidades();
+
+  await gestor.crear({
+    nombre: texto(formData, 'nombre'),
+  });
 
   revalidarVistasAdministradas();
 }

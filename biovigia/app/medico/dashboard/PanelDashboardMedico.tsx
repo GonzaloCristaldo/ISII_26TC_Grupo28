@@ -130,7 +130,7 @@ export default function PanelDashboardMedico({
           ['Pendientes', alertasOrdenadas.length],
           ['Criticas', resumenCriticidad.totalCriticas],
           ['Advertencias', resumenCriticidad.totalAdvertencias],
-          ['Pacientes', pacientesAfectados],
+          ['Pacientes con evento', pacientesAfectados],
         ].map(([etiqueta, valor]) => (
           <div key={etiqueta} className="rounded-lg border border-slate-300 bg-white px-4 py-3">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
@@ -548,7 +548,7 @@ export default function PanelDashboardMedico({
                             seleccionado ? 'text-slate-300' : 'text-slate-500'
                           }`}
                         >
-                          {paciente.contacto ?? 'Sin contacto registrado'}
+                          {paciente.email ?? paciente.telefono ?? 'Sin email o telefono'}
                         </p>
                       </div>
                       <span

@@ -1,19 +1,58 @@
 import type { RepositorioPacientes } from '@/modelos/repositorios/RepositorioPacientes';
-import type { Paciente, PacienteConMedicoResponsable } from '@/modelos/tipos';
+import type { GrupoSanguineo, Paciente, PacienteConMedicoResponsable } from '@/modelos/tipos';
 import { pool } from './PostgresCliente';
 
 type PacienteRow = {
   paciente_id: string;
-  nombre_completo: string;
-  contacto: string | null;
+  nombre: string;
+  apellido: string;
+  email: string | null;
+  telefono: string | null;
   medico_id: string;
+  fecha_nacimiento: string | Date | null;
+  grupo_sanguineo: GrupoSanguineo | null;
 };
 
 type PacienteConMedicoRow = PacienteRow & {
-  medico_nombre_completo: string;
+  medico_especialidad_id: string;
+  medico_nombre: string;
+  medico_apellido: string;
+  medico_email: string | null;
+  medico_telefono: string | null;
   medico_especialidad: string;
   medico_numero_licencia: string;
 };
+
+function mapearFechaNacimiento(fecha: string | Date | null) {
+  if (!fecha) return null;
+
+  if (fecha instanceof Date) {
+    return Number.isNaN(fecha.getTime()) ? null : fecha;
+  }
+
+  const textoFecha = fecha.trim();
+  if (!textoFecha) return null;
+
+  const valorFecha = /^\d{4}-\d{2}-\d{2}$/.test(textoFecha)
+    ? `${textoFecha}T00:00:00`
+    : textoFecha;
+  const fechaParseada = new Date(valorFecha);
+
+  return Number.isNaN(fechaParseada.getTime()) ? null : fechaParseada;
+}
+
+function mapearPaciente(fila: PacienteRow): Paciente {
+  return {
+    paciente_id: fila.paciente_id,
+    nombre: fila.nombre,
+    apellido: fila.apellido,
+    email: fila.email,
+    telefono: fila.telefono,
+    medico_id: fila.medico_id,
+    fecha_nacimiento: mapearFechaNacimiento(fila.fecha_nacimiento),
+    grupo_sanguineo: fila.grupo_sanguineo,
+  };
+}
 
 export class PostgresPacientesRepo implements RepositorioPacientes {
   async obtenerAsignadosPorMedico(medicoId: string): Promise<Paciente[]> {
@@ -23,21 +62,34 @@ export class PostgresPacientesRepo implements RepositorioPacientes {
     `;
 
     const respuesta = await pool.query<PacienteRow>(query, [medicoId]);
-    return respuesta.rows;
+    return respuesta.rows.map(mapearPaciente);
   }
 
   async obtenerPorIdConMedico(pacienteId: string): Promise<PacienteConMedicoResponsable | null> {
     const query = `
       SELECT
         p.paciente_id,
-        p.nombre_completo,
-        p.contacto,
+        u.nombre,
+        u.apellido,
+        u.email,
+        u.telefono,
         p.medico_id,
-        m.nombre_completo AS medico_nombre_completo,
-        m.especialidad AS medico_especialidad,
+        p.fecha_nacimiento,
+        p.grupo_sanguineo,
+        mu.nombre AS medico_nombre,
+        mu.apellido AS medico_apellido,
+        mu.email AS medico_email,
+        mu.telefono AS medico_telefono,
+        m.especialidad_id AS medico_especialidad_id,
+        e.nombre AS medico_especialidad,
         m.numero_licencia AS medico_numero_licencia
       FROM pacientes p
+      JOIN usuario_paciente up ON up.paciente_id = p.paciente_id
+      JOIN usuarios u ON u.usuario_id = up.usuario_id
       JOIN medicos m ON m.medico_id = p.medico_id
+      JOIN especialidades e ON e.especialidad_id = m.especialidad_id
+      JOIN usuario_medico um ON um.medico_id = m.medico_id
+      JOIN usuarios mu ON mu.usuario_id = um.usuario_id
       WHERE p.paciente_id = $1
     `;
 
@@ -49,13 +101,14 @@ export class PostgresPacientesRepo implements RepositorioPacientes {
     }
 
     return {
-      paciente_id: fila.paciente_id,
-      nombre_completo: fila.nombre_completo,
-      contacto: fila.contacto,
-      medico_id: fila.medico_id,
+      ...mapearPaciente(fila),
       medico_responsable: {
         medico_id: fila.medico_id,
-        nombre_completo: fila.medico_nombre_completo,
+        especialidad_id: fila.medico_especialidad_id,
+        nombre: fila.medico_nombre,
+        apellido: fila.medico_apellido,
+        email: fila.medico_email,
+        telefono: fila.medico_telefono,
         especialidad: fila.medico_especialidad,
         numero_licencia: fila.medico_numero_licencia,
       },

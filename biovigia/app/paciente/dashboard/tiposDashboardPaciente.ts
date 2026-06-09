@@ -1,4 +1,4 @@
-import type { TipoMedicionNombre } from '@/modelos/tipos';
+import type { GrupoSanguineo, TipoMedicionNombre } from '@/modelos/tipos';
 
 export type MedicionDashboardPaciente = {
   medicion_id?: string;
@@ -16,7 +16,10 @@ export type TipoMedicionDashboardPaciente = {
 export type PerfilDashboardPaciente = {
   paciente_id: string;
   nombreCompleto: string;
-  contacto: string | null;
+  email: string | null;
+  telefono: string | null;
+  fechaNacimiento: string | null;
+  grupoSanguineo: GrupoSanguineo | null;
   medicoResponsable: {
     nombreCompleto: string;
     especialidad: string;

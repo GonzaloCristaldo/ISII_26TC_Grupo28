@@ -10,6 +10,10 @@ import { MedicoRegistrable, UsuarioAutenticable, UsuarioSesion } from '@/modelos
 function mapearUsuarioSesion(usuario: UsuarioAutenticable): UsuarioSesion {
   return {
     usuarioId: usuario.usuarioId,
+    nombre: usuario.nombre,
+    apellido: usuario.apellido,
+    email: usuario.email,
+    telefono: usuario.telefono,
     username: usuario.username,
     nombreCompleto: usuario.nombreCompleto,
     rol: usuario.rol,
@@ -33,8 +37,11 @@ export class GestorAutenticacion {
 
   async registrarCuentaMedico(datos: DatosRegistroMedico): Promise<UsuarioSesion> {
     const usuario = await this.repoUsuariosAuth.registrarMedico({
-      nombreCompleto: datos.nombreCompleto,
-      especialidad: datos.especialidad,
+      nombre: datos.nombre,
+      apellido: datos.apellido,
+      email: datos.email,
+      telefono: datos.telefono,
+      especialidadId: datos.especialidadId,
       numeroLicencia: datos.numeroLicencia,
       username: datos.username,
       passwordHash: generarPasswordHash(datos.password),
@@ -45,8 +52,12 @@ export class GestorAutenticacion {
 
   async registrarCuentaPaciente(datos: DatosRegistroPaciente): Promise<UsuarioSesion> {
     const usuario = await this.repoUsuariosAuth.registrarPaciente({
-      nombreCompleto: datos.nombreCompleto,
-      contacto: datos.contacto,
+      nombre: datos.nombre,
+      apellido: datos.apellido,
+      email: datos.email,
+      telefono: datos.telefono,
+      fechaNacimiento: datos.fechaNacimiento,
+      grupoSanguineo: datos.grupoSanguineo,
       medicoResponsableId: datos.medicoResponsableId,
       username: datos.username,
       passwordHash: generarPasswordHash(datos.password),

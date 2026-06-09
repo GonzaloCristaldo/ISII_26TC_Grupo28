@@ -17,40 +17,63 @@ INSERT INTO tipos_medicion (tipo_medicion_id, nombre, unidad) VALUES
   ('fdd8e652-7a9f-4bc2-afec-d47876ef64a8', 'Glucosa', 'mg/dL')
 ON CONFLICT (nombre) DO NOTHING;
 
-INSERT INTO medicos (medico_id, nombre_completo, especialidad, numero_licencia)
-VALUES ('3d5a4435-0275-430c-99e2-ab001ac0aa3f', 'Dra. Laura Gomez', 'Medicina General', 'MN-1001')
-ON CONFLICT DO NOTHING;
+INSERT INTO especialidades (especialidad_id, nombre) VALUES
+  ('bb6e2dbd-c0f9-4b0b-a131-857f1f63c5c5', 'Medicina General'),
+  ('30f45bb2-7c1b-47f2-b0a4-cf4090f243e0', 'Cardiologia'),
+  ('6642ebea-e31f-4862-bc2b-b3f606a1e8c5', 'Clinica Medica'),
+  ('7a79dc59-654c-4410-8f56-18ec656f691f', 'Pediatria')
+ON CONFLICT (nombre) DO NOTHING;
 
-INSERT INTO pacientes (paciente_id, nombre_completo, contacto, medico_id)
+INSERT INTO medicos (medico_id, especialidad_id, numero_licencia)
 VALUES (
-  'e5b87140-5712-4c2f-b4de-1a221f00a581',
-  'Sofia Martinez',
-  'sofia.martinez@example.com',
-  '3d5a4435-0275-430c-99e2-ab001ac0aa3f'
+  '3d5a4435-0275-430c-99e2-ab001ac0aa3f',
+  'bb6e2dbd-c0f9-4b0b-a131-857f1f63c5c5',
+  'MN-1001'
 )
 ON CONFLICT DO NOTHING;
 
-INSERT INTO usuarios (usuario_id, username, password_hash, rol_id)
+INSERT INTO pacientes (paciente_id, medico_id, fecha_nacimiento, grupo_sanguineo)
+VALUES (
+  'e5b87140-5712-4c2f-b4de-1a221f00a581',
+  '3d5a4435-0275-430c-99e2-ab001ac0aa3f',
+  NULL,
+  NULL
+)
+ON CONFLICT DO NOTHING;
+
+INSERT INTO usuarios (usuario_id, nombre, apellido, email, telefono, username, password_hash, rol_id)
 VALUES (
   '61bbfb11-4045-4d49-873b-54401a5d1349',
+  'Administrador',
+  'BioVigia',
+  NULL,
+  NULL,
   'admin',
   'scrypt$adminseedbiovigia01$fa0c22b0845943125cc9db2ada9fb51793c691b2e374856a75c8b0af089d75391c8420eda607182ebf7f47d8e3936d4fe3329c16bb9a48222ebd7bbdb46e4270',
   '82be8d86-9e52-4e2e-9a62-9a17b2e61335'
 )
 ON CONFLICT (username) DO NOTHING;
 
-INSERT INTO usuarios (usuario_id, username, password_hash, rol_id)
+INSERT INTO usuarios (usuario_id, nombre, apellido, email, telefono, username, password_hash, rol_id)
 VALUES (
   'f2fdb3d8-4f6d-481e-b08a-76f858d1f2f7',
+  'Laura',
+  'Gomez',
+  'laura.gomez@example.com',
+  NULL,
   'laura.gomez',
   'scrypt$5432cab35c4330c279d758b2a5e6fcd3$bac9e320f0b186e785fd11583ff8f5ed388cbd415e9c7b5095e722aaffd3666b4f72debd757aa0abc7da1a57a8458221b6720a66f6b313b372c74adf95106890',
   '7d696604-c2ce-47b1-ae2d-72c8ff8f86f1'
 )
 ON CONFLICT (username) DO NOTHING;
 
-INSERT INTO usuarios (usuario_id, username, password_hash, rol_id)
+INSERT INTO usuarios (usuario_id, nombre, apellido, email, telefono, username, password_hash, rol_id)
 VALUES (
   '7ef9f957-b4a0-4dd4-9f6f-2d689d8ef2d5',
+  'Sofia',
+  'Martinez',
+  'sofia.martinez@example.com',
+  NULL,
   'sofia.martinez',
   'scrypt$76ea755ab60095a04c54721d8e4eca33$e1f2fb49914f9792481247ef9723d9fbf69314b339bdaa13508593120769f151bf325f6ad887b0896bb3df6370777012ec7c45551216648b58fb5d336376df52',
   '6da368fb-2d8d-4d39-8de6-e75e70ca9018'

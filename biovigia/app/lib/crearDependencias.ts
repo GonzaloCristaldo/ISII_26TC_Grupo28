@@ -2,6 +2,7 @@ import { GestorAutenticacion } from '@/logica/servicios/GestorAutenticacion';
 import { GestorAlertasMedico } from '@/logica/servicios/GestorAlertasMedico';
 import { GestorAdministracionUsuarios } from '@/logica/servicios/GestorAdministracionUsuarios';
 import { GestorConfiguracionClinica } from '@/logica/servicios/GestorConfiguracionClinica';
+import { GestorEspecialidades } from '@/logica/servicios/GestorEspecialidades';
 import { GestorRegistroMedicion } from '@/logica/servicios/GestorRegistroMedicion';
 import { GestorPacientesMedico } from '@/logica/servicios/GestorPacientesMedico';
 import { GestorDashboardPaciente } from '@/logica/servicios/GestorDashboardPaciente';
@@ -9,6 +10,7 @@ import {
   crearRepositorioAdministracionUsuarios,
   crearRepositorioAlertas,
   crearRepositorioConfiguracionClinica,
+  crearRepositorioEspecialidades,
   crearRepositorioMediciones,
   crearRepositorioPacientes,
   crearRepositorioUmbrales,
@@ -62,4 +64,8 @@ export function crearGestorConfiguracionClinica() {
     crearRepositorioUmbrales(),
     crearRepositorioConfiguracionClinica(),
   );
+}
+
+export function crearGestorEspecialidades() {
+  return new GestorEspecialidades(crearRepositorioEspecialidades());
 }

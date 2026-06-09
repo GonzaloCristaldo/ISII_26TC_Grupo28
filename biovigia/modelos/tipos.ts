@@ -1,6 +1,14 @@
 export type TipoEstadoMedicion = 'Normal' | 'Advertencia' | 'Critico';
 export type TipoMedicionNombre = string;
 export type RolUsuario = 'medico' | 'paciente' | 'administrador';
+export type GrupoSanguineo = 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-';
+
+export interface Especialidad {
+  especialidad_id: string;
+  nombre: string;
+  activa: boolean;
+  creado_en: Date;
+}
 
 export interface TipoMedicion {
   tipo_medicion_id: string;
@@ -10,14 +18,22 @@ export interface TipoMedicion {
 
 export interface Paciente {
   paciente_id: string;
-  nombre_completo: string;
-  contacto: string | null;
+  nombre: string;
+  apellido: string;
+  email: string | null;
+  telefono: string | null;
   medico_id: string;
+  fecha_nacimiento: Date | null;
+  grupo_sanguineo: GrupoSanguineo | null;
 }
 
 export interface Medico {
   medico_id: string;
-  nombre_completo: string;
+  especialidad_id: string;
+  nombre: string;
+  apellido: string;
+  email: string | null;
+  telefono: string | null;
   especialidad: string;
   numero_licencia: string;
 }
@@ -62,6 +78,10 @@ export interface Umbral {
 
 export interface UsuarioSesion {
   usuarioId: string;
+  nombre: string;
+  apellido: string;
+  email: string | null;
+  telefono: string | null;
   username: string;
   nombreCompleto: string;
   rol: RolUsuario;
@@ -76,30 +96,44 @@ export interface UsuarioAutenticable extends UsuarioSesion {
 export interface UsuarioAdministrable extends UsuarioSesion {
   activo: boolean;
   creadoEn: Date;
+  especialidadId: string | null;
   especialidad: string | null;
   numeroLicencia: string | null;
-  contacto: string | null;
+  fechaNacimiento: Date | null;
+  grupoSanguineo: GrupoSanguineo | null;
   medicoResponsableId: string | null;
   medicoResponsableNombre: string | null;
 }
 
 export interface MedicoRegistrable {
   medico_id: string;
+  especialidad_id: string;
+  nombre: string;
+  apellido: string;
   nombreCompleto: string;
+  email: string | null;
+  telefono: string | null;
   especialidad: string;
 }
 
 export interface DatosCuentaMedico {
-  nombreCompleto: string;
-  especialidad: string;
+  nombre: string;
+  apellido: string;
+  email: string | null;
+  telefono: string | null;
+  especialidadId: string;
   numeroLicencia: string;
   username: string;
   passwordHash: string;
 }
 
 export interface DatosCuentaPaciente {
-  nombreCompleto: string;
-  contacto: string;
+  nombre: string;
+  apellido: string;
+  email: string | null;
+  telefono: string | null;
+  fechaNacimiento: string | null;
+  grupoSanguineo: GrupoSanguineo | null;
   medicoResponsableId: string;
   username: string;
   passwordHash: string;
@@ -107,15 +141,26 @@ export interface DatosCuentaPaciente {
 
 export interface DatosEdicionMedico {
   medicoId: string;
-  nombreCompleto: string;
-  especialidad: string;
+  nombre: string;
+  apellido: string;
+  email: string | null;
+  telefono: string | null;
+  especialidadId: string;
   numeroLicencia: string;
+}
+
+export interface DatosEspecialidad {
+  nombre: string;
 }
 
 export interface DatosEdicionPaciente {
   pacienteId: string;
-  nombreCompleto: string;
-  contacto: string;
+  nombre: string;
+  apellido: string;
+  email: string | null;
+  telefono: string | null;
+  fechaNacimiento: string | null;
+  grupoSanguineo: GrupoSanguineo | null;
   medicoResponsableId: string;
 }
 

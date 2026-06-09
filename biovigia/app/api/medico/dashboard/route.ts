@@ -36,9 +36,14 @@ function serializarMedicion(medicion: Medicion) {
 function serializarPaciente(paciente: Paciente) {
   return {
     paciente_id: paciente.paciente_id,
-    nombre_completo: paciente.nombre_completo,
-    contacto: paciente.contacto,
+    nombre: paciente.nombre,
+    apellido: paciente.apellido,
+    nombreCompleto: [paciente.nombre, paciente.apellido].filter(Boolean).join(' '),
+    email: paciente.email,
+    telefono: paciente.telefono,
     medico_id: paciente.medico_id,
+    fecha_nacimiento: paciente.fecha_nacimiento?.toISOString().slice(0, 10) ?? null,
+    grupo_sanguineo: paciente.grupo_sanguineo,
   };
 }
 

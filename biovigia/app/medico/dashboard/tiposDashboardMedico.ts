@@ -1,4 +1,4 @@
-import type { TipoEstadoMedicion, TipoMedicionNombre } from '@/modelos/tipos';
+import type { GrupoSanguineo, TipoEstadoMedicion, TipoMedicionNombre } from '@/modelos/tipos';
 
 export type AlertaDashboard = {
   alerta_id: string;
@@ -30,7 +30,10 @@ export type TipoMedicionDashboard = {
 export type PacienteDashboard = {
   paciente_id: string;
   nombreCompleto: string;
-  contacto: string | null;
+  email: string | null;
+  telefono: string | null;
+  fechaNacimiento: string | null;
+  grupoSanguineo: GrupoSanguineo | null;
 };
 
 export type FiltroEstadoDashboard = 'Todos' | TipoEstadoMedicion;

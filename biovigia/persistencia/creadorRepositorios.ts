@@ -1,6 +1,7 @@
 import { RepositorioAlertas } from '@/modelos/repositorios/RepositorioAlertas';
 import { RepositorioAdministracionUsuarios } from '@/modelos/repositorios/RepositorioAdministracionUsuarios';
 import { RepositorioConfiguracionClinica } from '@/modelos/repositorios/RepositorioConfiguracionClinica';
+import { RepositorioEspecialidades } from '@/modelos/repositorios/RepositorioEspecialidades';
 import { RepositorioMediciones } from '@/modelos/repositorios/RepositorioMediciones';
 import { RepositorioPacientes } from '@/modelos/repositorios/RepositorioPacientes';
 import { RepositorioUmbrales } from '@/modelos/repositorios/RepositorioUmbrales';
@@ -8,6 +9,7 @@ import { RepositorioUsuariosAuth } from '@/modelos/repositorios/RepositorioUsuar
 import { PostgresAdministracionUsuariosRepo } from '@/persistencia/postgres/PostgresAdministracionUsuariosRepo';
 import { PostgresAlertasRepo } from '@/persistencia/postgres/PostgresAlertasRepo';
 import { PostgresConfiguracionClinicaRepo } from '@/persistencia/postgres/PostgresConfiguracionClinicaRepo';
+import { PostgresEspecialidadesRepo } from '@/persistencia/postgres/PostgresEspecialidadesRepo';
 import { PostgresMedicionesRepo } from '@/persistencia/postgres/PostgresMedicionesRepo';
 import { PostgresPacientesRepo } from '@/persistencia/postgres/PostgresPacientesRepo';
 import { PostgresUmbralesRepo } from '@/persistencia/postgres/PostgresUmbralesRepo';
@@ -16,6 +18,9 @@ import { SupabaseAlertasRepo } from '@/persistencia/supabase/SupabaseAlertasRepo
 import { SupabaseMedicionesRepo } from '@/persistencia/supabase/SupabaseMedicionesRepo';
 import { SupabasePacientesRepo } from '@/persistencia/supabase/SupabasePacientesRepo';
 import { SupabaseUmbralesRepo } from '@/persistencia/supabase/SupabaseUmbralesRepo';
+import { SupabaseUsuariosAuthRepo } from '@/persistencia/supabase/SupabaseUsuariosAuthRepo';
+import { SupabaseAdministracionUsuariosRepo } from '@/persistencia/supabase/SupabaseAdministracionUsuariosRepo';
+import { SupabaseConfiguracionClinicaRepo } from '@/persistencia/supabase/SupabaseConfiguracionClinicaRepo';
 
 /*Se intenta juntar aca la creacion de "repositorio de datos" 
 para que la logica de negocio no tenga que conocer detalles de persistencia, 
@@ -86,7 +91,7 @@ export function crearRepositorioUsuariosAuth(): RepositorioUsuariosAuth {
     case 'postgres':
       return new PostgresUsuariosAuthRepo();
     case 'supabase':
-      throw new Error('La autenticacion con Supabase todavia no esta implementada.');
+      return new SupabaseUsuariosAuthRepo();
   }
 }
 
@@ -95,7 +100,7 @@ export function crearRepositorioAdministracionUsuarios(): RepositorioAdministrac
     case 'postgres':
       return new PostgresAdministracionUsuariosRepo();
     case 'supabase':
-      throw new Error('La administracion de usuarios con Supabase todavia no esta implementada.');
+      return new SupabaseAdministracionUsuariosRepo();
   }
 }
 
@@ -104,6 +109,15 @@ export function crearRepositorioConfiguracionClinica(): RepositorioConfiguracion
     case 'postgres':
       return new PostgresConfiguracionClinicaRepo();
     case 'supabase':
-      throw new Error('La configuracion clinica con Supabase todavia no esta implementada.');
+      return new SupabaseConfiguracionClinicaRepo();
+  }
+}
+
+export function crearRepositorioEspecialidades(): RepositorioEspecialidades {
+  switch (resolverDriverPersistencia()) {
+    case 'postgres':
+      return new PostgresEspecialidadesRepo();
+    case 'supabase':
+      throw new Error('La gestion de especialidades con Supabase todavia no esta implementada.');
   }
 }

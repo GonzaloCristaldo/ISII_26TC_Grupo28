@@ -97,8 +97,15 @@ export async function obtenerSesionActual(): Promise<UsuarioSesion | null> {
     return null;
   }
 
+  const nombreFallback = payload.nombreCompleto.split(' ')[0] || payload.username;
+  const apellidoFallback = payload.nombreCompleto.split(' ').slice(1).join(' ');
+
   return {
     usuarioId: payload.usuarioId,
+    nombre: payload.nombre ?? nombreFallback,
+    apellido: payload.apellido ?? apellidoFallback,
+    email: payload.email ?? null,
+    telefono: payload.telefono ?? null,
     username: payload.username,
     nombreCompleto: payload.nombreCompleto,
     rol: payload.rol,

@@ -5,7 +5,7 @@ import {
   registrarPacienteAccion,
 } from '@/app/auth/accionesAutenticacion';
 import { destinoPorRol } from '@/app/lib/destinos';
-import { crearGestorAutenticacion } from '@/app/lib/crearDependencias';
+import { crearGestorAutenticacion, crearGestorEspecialidades } from '@/app/lib/crearDependencias';
 import { obtenerSesionActual } from '@/app/lib/session';
 
 type RegistroPageProps = {
@@ -26,7 +26,12 @@ export default async function RegistroPage({ searchParams }: RegistroPageProps) 
   const registroError = params?.registroError;
   const registroAbierto = params?.registro;
   const gestorAutenticacion = crearGestorAutenticacion();
-  const medicos = await gestorAutenticacion.listarMedicosRegistrables();
+  const gestorEspecialidades = crearGestorEspecialidades();
+  const [medicos, especialidades] = await Promise.all([
+    gestorAutenticacion.listarMedicosRegistrables(),
+    gestorEspecialidades.listar(),
+  ]);
+  const especialidadesActivas = especialidades.filter((especialidad) => especialidad.activa);
 
   return (
     <main className="min-h-screen bg-slate-100 px-4 py-10">
@@ -89,29 +94,84 @@ export default async function RegistroPage({ searchParams }: RegistroPageProps) 
                   Registrarse como medico
                 </summary>
 
+                {especialidadesActivas.length === 0 ? (
+                  <p className="mt-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                    Primero debe existir al menos una especialidad cargada por administracion.
+                  </p>
+                ) : (
                 <form action={registrarMedicoAccion} className="mt-5 space-y-4">
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-slate-700">
-                      Nombre completo
-                    </label>
-                    <input
-                      name="nombre_completo"
-                      type="text"
-                      required
-                      className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-cyan-500"
-                    />
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-2 block text-sm font-medium text-slate-700">
+                        Nombre
+                      </label>
+                      <input
+                        name="nombre"
+                        type="text"
+                        required
+                        className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-cyan-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-medium text-slate-700">
+                        Apellido
+                      </label>
+                      <input
+                        name="apellido"
+                        type="text"
+                        required
+                        className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-cyan-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-2 block text-sm font-medium text-slate-700">
+                        Email
+                      </label>
+                      <input
+                        name="email"
+                        type="email"
+                        className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-cyan-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-medium text-slate-700">
+                        Telefono
+                      </label>
+                      <input
+                        name="telefono"
+                        type="tel"
+                        className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-cyan-500"
+                      />
+                    </div>
                   </div>
 
                   <div>
                     <label className="mb-2 block text-sm font-medium text-slate-700">
                       Especialidad
                     </label>
-                    <input
-                      name="especialidad"
-                      type="text"
+                    <select
+                      name="especialidad_id"
                       required
+                      defaultValue=""
                       className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-cyan-500"
-                    />
+                    >
+                      <option value="" disabled>
+                        Selecciona una especialidad
+                      </option>
+                      {especialidadesActivas.map((especialidad) => (
+                        <option
+                          key={especialidad.especialidad_id}
+                          value={especialidad.especialidad_id}
+                        >
+                          {especialidad.nombre}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div>
@@ -158,6 +218,7 @@ export default async function RegistroPage({ searchParams }: RegistroPageProps) 
                     Crear cuenta de medico
                   </button>
                 </form>
+                )}
               </details>
 
               <details
@@ -174,29 +235,85 @@ export default async function RegistroPage({ searchParams }: RegistroPageProps) 
                   </p>
                 ) : (
                   <form action={registrarPacienteAccion} className="mt-5 space-y-4">
-                    <div>
-                      <label className="mb-2 block text-sm font-medium text-slate-700">
-                        Nombre completo
-                      </label>
-                      <input
-                        name="nombre_completo"
-                        type="text"
-                        required
-                        className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500"
-                      />
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div>
+                        <label className="mb-2 block text-sm font-medium text-slate-700">
+                          Nombre
+                        </label>
+                        <input
+                          name="nombre"
+                          type="text"
+                          required
+                          className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="mb-2 block text-sm font-medium text-slate-700">
+                          Apellido
+                        </label>
+                        <input
+                          name="apellido"
+                          type="text"
+                          required
+                          className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500"
+                        />
+                      </div>
                     </div>
 
-                    <div>
-                      <label className="mb-2 block text-sm font-medium text-slate-700">
-                        Contacto
-                      </label>
-                      <input
-                        name="contacto"
-                        type="text"
-                        required
-                        className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500"
-                        placeholder="Correo o telefono"
-                      />
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div>
+                        <label className="mb-2 block text-sm font-medium text-slate-700">
+                          Email
+                        </label>
+                        <input
+                          name="email"
+                          type="email"
+                          className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="mb-2 block text-sm font-medium text-slate-700">
+                          Telefono
+                        </label>
+                        <input
+                          name="telefono"
+                          type="tel"
+                          className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div>
+                        <label className="mb-2 block text-sm font-medium text-slate-700">
+                          Fecha de nacimiento
+                        </label>
+                        <input
+                          name="fecha_nacimiento"
+                          type="date"
+                          className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="mb-2 block text-sm font-medium text-slate-700">
+                          Grupo sanguineo
+                        </label>
+                        <select
+                          name="grupo_sanguineo"
+                          className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500"
+                          defaultValue=""
+                        >
+                          <option value="">Sin informar</option>
+                          {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((grupo) => (
+                            <option key={grupo} value={grupo}>
+                              {grupo}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
 
                     <div>

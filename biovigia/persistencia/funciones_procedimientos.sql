@@ -141,7 +141,7 @@ AS $$
     a.leido_por_medico,
     a.fecha,
     p.paciente_id,
-    p.nombre_completo::TEXT AS paciente_nombre,
+    btrim(concat_ws(' ', u.nombre, u.apellido))::TEXT AS paciente_nombre,
     tm.nombre::TEXT AS medicion_tipo,
     tm.unidad::TEXT AS medicion_unidad,
     m.valor AS medicion_valor,
@@ -151,6 +151,8 @@ AS $$
   JOIN mediciones m ON a.medicion_id = m.medicion_id
   JOIN tipos_medicion tm ON tm.tipo_medicion_id = m.tipo_medicion_id
   JOIN pacientes p ON m.paciente_id = p.paciente_id
+  JOIN usuario_paciente up ON up.paciente_id = p.paciente_id
+  JOIN usuarios u ON u.usuario_id = up.usuario_id
   WHERE p.medico_id = p_medico_id
     AND a.leido_por_medico = false
   ORDER BY a.fecha DESC;
@@ -185,8 +187,12 @@ $$;
 CREATE OR REPLACE FUNCTION fn_pacientes_asignados_medico(p_medico_id UUID)
 RETURNS TABLE (
   paciente_id UUID,
-  nombre_completo TEXT,
-  contacto TEXT,
+  nombre TEXT,
+  apellido TEXT,
+  email TEXT,
+  telefono TEXT,
+  fecha_nacimiento DATE,
+  grupo_sanguineo TEXT,
   medico_id UUID
 )
 LANGUAGE sql
@@ -194,12 +200,18 @@ STABLE
 AS $$
   SELECT
     p.paciente_id,
-    p.nombre_completo::TEXT AS nombre_completo,
-    p.contacto::TEXT AS contacto,
+    u.nombre::TEXT AS nombre,
+    u.apellido::TEXT AS apellido,
+    u.email::TEXT AS email,
+    u.telefono::TEXT AS telefono,
+    p.fecha_nacimiento,
+    p.grupo_sanguineo::TEXT AS grupo_sanguineo,
     p.medico_id
   FROM pacientes p
+  JOIN usuario_paciente up ON up.paciente_id = p.paciente_id
+  JOIN usuarios u ON u.usuario_id = up.usuario_id
   WHERE p.medico_id = p_medico_id
-  ORDER BY p.nombre_completo ASC;
+  ORDER BY u.apellido ASC, u.nombre ASC;
 $$;
 
 CREATE OR REPLACE FUNCTION fn_historial_mediciones_paciente(p_paciente_id UUID)

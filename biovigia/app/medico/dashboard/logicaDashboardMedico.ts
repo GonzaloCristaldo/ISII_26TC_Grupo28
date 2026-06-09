@@ -178,7 +178,9 @@ export function filtrarPacientesDashboard(
     const coincideBusqueda =
       textoBusqueda.length === 0 ||
       paciente.nombreCompleto.toLowerCase().includes(textoBusqueda) ||
-      paciente.contacto?.toLowerCase().includes(textoBusqueda);
+      paciente.email?.toLowerCase().includes(textoBusqueda) ||
+      paciente.telefono?.toLowerCase().includes(textoBusqueda) ||
+      paciente.grupoSanguineo?.toLowerCase().includes(textoBusqueda);
     const coincideFiltro =
       filtro === 'Todos' ||
       (filtro === 'ConAlertas' && alertasPaciente.length > 0) ||

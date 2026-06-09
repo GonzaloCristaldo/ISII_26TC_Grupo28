@@ -9,16 +9,22 @@ import {
   cambiarEstadoUsuarioAdminAccion,
 } from './accionesAdmin';
 
-type UsuarioAdministrableVista = Omit<UsuarioAdministrable, 'creadoEn'> & {
+type UsuarioAdministrableVista = Omit<UsuarioAdministrable, 'creadoEn' | 'fechaNacimiento'> & {
   creadoEn: string;
+  fechaNacimiento: string | null;
 };
 
 type Props = {
   usuarios: UsuarioAdministrableVista[];
   medicos: MedicoRegistrable[];
+  especialidades: {
+    especialidad_id: string;
+    nombre: string;
+  }[];
 };
 
 const USUARIOS_POR_PAGINA = 5;
+const GRUPOS_SANGUINEOS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
 type FiltroEstadoUsuario = 'todos' | 'activos' | 'inactivos';
 type FiltroAsignacionPaciente = 'todos' | 'conMedico' | 'sinMedico';
@@ -27,10 +33,14 @@ type OrdenUsuarios = 'nombre' | 'usuario' | 'estado';
 function coincideBusqueda(usuario: UsuarioAdministrableVista, busqueda: string) {
   const texto = [
     usuario.nombreCompleto,
+    usuario.nombre,
+    usuario.apellido,
     usuario.username,
+    usuario.email,
+    usuario.telefono,
     usuario.especialidad,
     usuario.numeroLicencia,
-    usuario.contacto,
+    usuario.grupoSanguineo,
     usuario.medicoResponsableNombre,
   ]
     .filter(Boolean)
@@ -67,7 +77,13 @@ function ordenarUsuarios(usuarios: UsuarioAdministrableVista[], orden: OrdenUsua
   });
 }
 
-function campoTexto(label: string, name: string, defaultValue: string) {
+function campoTexto(
+  label: string,
+  name: string,
+  defaultValue: string,
+  required = true,
+  type = 'text',
+) {
   return (
     <label className="block">
       <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
@@ -75,12 +91,67 @@ function campoTexto(label: string, name: string, defaultValue: string) {
       </span>
       <input
         name={name}
+        type={type}
         defaultValue={defaultValue}
-        required
+        required={required}
         className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-slate-700"
       />
     </label>
   );
+}
+
+function selectorGrupoSanguineo(defaultValue: string | null) {
+  return (
+    <label className="block">
+      <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+        Grupo sanguineo
+      </span>
+      <select
+        name="grupo_sanguineo"
+        defaultValue={defaultValue ?? ''}
+        className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-slate-700"
+      >
+        <option value="">Sin informar</option>
+        {GRUPOS_SANGUINEOS.map((grupo) => (
+          <option key={grupo} value={grupo}>
+            {grupo}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+function selectorEspecialidad(
+  especialidades: Props['especialidades'],
+  defaultValue: string | null,
+) {
+  return (
+    <label className="block">
+      <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+        Especialidad
+      </span>
+      <select
+        name="especialidad_id"
+        defaultValue={defaultValue ?? ''}
+        required
+        className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-slate-700"
+      >
+        <option value="" disabled>
+          Seleccionar
+        </option>
+        {especialidades.map((especialidad) => (
+          <option key={especialidad.especialidad_id} value={especialidad.especialidad_id}>
+            {especialidad.nombre}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+function datoContactoPrincipal(usuario: UsuarioAdministrableVista) {
+  return usuario.email ?? usuario.telefono ?? 'Sin email o telefono';
 }
 
 function EstadoBadge({ activo }: { activo: boolean }) {
@@ -297,7 +368,7 @@ function ListaUsuarios({
   );
 }
 
-export default function PanelUsuariosAdmin({ usuarios, medicos }: Props) {
+export default function PanelUsuariosAdmin({ usuarios, medicos, especialidades }: Props) {
   const [busquedaMedicos, setBusquedaMedicos] = useState('');
   const [busquedaPacientes, setBusquedaPacientes] = useState('');
   const [paginaMedicos, setPaginaMedicos] = useState(1);
@@ -449,6 +520,9 @@ export default function PanelUsuariosAdmin({ usuarios, medicos }: Props) {
                       <p className="mt-1 text-sm text-slate-500">
                         Usuario: {medicoSeleccionado.username}
                       </p>
+                      <p className="mt-1 text-sm text-slate-500">
+                        {datoContactoPrincipal(medicoSeleccionado)}
+                      </p>
                     </div>
                     <EstadoBadge activo={medicoSeleccionado.activo} />
                   </div>
@@ -464,8 +538,11 @@ export default function PanelUsuariosAdmin({ usuarios, medicos }: Props) {
                     className="mt-4 grid gap-3 md:grid-cols-2"
                   >
                     <input type="hidden" name="medico_id" value={medicoSeleccionado.medicoId} />
-                    {campoTexto('Nombre completo', 'nombre_completo', medicoSeleccionado.nombreCompleto)}
-                    {campoTexto('Especialidad', 'especialidad', medicoSeleccionado.especialidad ?? '')}
+                    {campoTexto('Nombre', 'nombre', medicoSeleccionado.nombre)}
+                    {campoTexto('Apellido', 'apellido', medicoSeleccionado.apellido)}
+                    {campoTexto('Email', 'email', medicoSeleccionado.email ?? '', false, 'email')}
+                    {campoTexto('Telefono', 'telefono', medicoSeleccionado.telefono ?? '', false, 'tel')}
+                    {selectorEspecialidad(especialidades, medicoSeleccionado.especialidadId)}
                     {campoTexto('Numero licencia', 'numero_licencia', medicoSeleccionado.numeroLicencia ?? '')}
                     <button
                       type="submit"
@@ -552,6 +629,9 @@ export default function PanelUsuariosAdmin({ usuarios, medicos }: Props) {
                       <p className="mt-1 text-sm text-slate-500">
                         Usuario: {pacienteSeleccionado.username}
                       </p>
+                      <p className="mt-1 text-sm text-slate-500">
+                        {datoContactoPrincipal(pacienteSeleccionado)}
+                      </p>
                     </div>
                     <EstadoBadge activo={pacienteSeleccionado.activo} />
                   </div>
@@ -567,8 +647,18 @@ export default function PanelUsuariosAdmin({ usuarios, medicos }: Props) {
                     className="mt-4 grid gap-3 md:grid-cols-2"
                   >
                     <input type="hidden" name="paciente_id" value={pacienteSeleccionado.pacienteId} />
-                    {campoTexto('Nombre completo', 'nombre_completo', pacienteSeleccionado.nombreCompleto)}
-                    {campoTexto('Contacto', 'contacto', pacienteSeleccionado.contacto ?? '')}
+                    {campoTexto('Nombre', 'nombre', pacienteSeleccionado.nombre)}
+                    {campoTexto('Apellido', 'apellido', pacienteSeleccionado.apellido)}
+                    {campoTexto('Email', 'email', pacienteSeleccionado.email ?? '', false, 'email')}
+                    {campoTexto('Telefono', 'telefono', pacienteSeleccionado.telefono ?? '', false, 'tel')}
+                    {campoTexto(
+                      'Fecha nacimiento',
+                      'fecha_nacimiento',
+                      pacienteSeleccionado.fechaNacimiento?.slice(0, 10) ?? '',
+                      false,
+                      'date',
+                    )}
+                    {selectorGrupoSanguineo(pacienteSeleccionado.grupoSanguineo)}
                     <label className="block">
                       <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
                         Medico responsable

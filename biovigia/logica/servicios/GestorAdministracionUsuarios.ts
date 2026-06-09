@@ -10,19 +10,26 @@ import {
 import {
   DatosEdicionMedico,
   DatosEdicionPaciente,
+  GrupoSanguineo,
   MedicoRegistrable,
   UsuarioAdministrable,
 } from '@/modelos/tipos';
 
+const GRUPOS_SANGUINEOS: GrupoSanguineo[] = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+
 function validarDatosEdicionMedico(datos: DatosEdicionMedico) {
-  if (!datos.medicoId || !datos.nombreCompleto || !datos.especialidad || !datos.numeroLicencia) {
+  if (!datos.medicoId || !datos.nombre || !datos.apellido || !datos.especialidadId || !datos.numeroLicencia) {
     throw new Error('Completa todos los datos del medico.');
   }
 }
 
 function validarDatosEdicionPaciente(datos: DatosEdicionPaciente) {
-  if (!datos.pacienteId || !datos.nombreCompleto || !datos.contacto || !datos.medicoResponsableId) {
+  if (!datos.pacienteId || !datos.nombre || !datos.apellido || !datos.medicoResponsableId) {
     throw new Error('Completa todos los datos del paciente.');
+  }
+
+  if (datos.grupoSanguineo && !GRUPOS_SANGUINEOS.includes(datos.grupoSanguineo)) {
+    throw new Error('El grupo sanguineo indicado no es valido.');
   }
 }
 
@@ -44,8 +51,11 @@ export class GestorAdministracionUsuarios {
     validarDatosRegistroMedico(datos);
 
     await this.repoUsuariosAuth.registrarMedico({
-      nombreCompleto: datos.nombreCompleto,
-      especialidad: datos.especialidad,
+      nombre: datos.nombre,
+      apellido: datos.apellido,
+      email: datos.email,
+      telefono: datos.telefono,
+      especialidadId: datos.especialidadId,
       numeroLicencia: datos.numeroLicencia,
       username: datos.username,
       passwordHash: generarPasswordHash(datos.password),
@@ -56,8 +66,12 @@ export class GestorAdministracionUsuarios {
     validarDatosRegistroPaciente(datos);
 
     await this.repoUsuariosAuth.registrarPaciente({
-      nombreCompleto: datos.nombreCompleto,
-      contacto: datos.contacto,
+      nombre: datos.nombre,
+      apellido: datos.apellido,
+      email: datos.email,
+      telefono: datos.telefono,
+      fechaNacimiento: datos.fechaNacimiento,
+      grupoSanguineo: datos.grupoSanguineo,
       medicoResponsableId: datos.medicoResponsableId,
       username: datos.username,
       passwordHash: generarPasswordHash(datos.password),
@@ -84,8 +98,14 @@ export class GestorAdministracionUsuarios {
 
     await this.actualizarPaciente({
       pacienteId,
-      nombreCompleto: paciente.nombreCompleto,
-      contacto: paciente.contacto ?? '',
+      nombre: paciente.nombre,
+      apellido: paciente.apellido,
+      email: paciente.email,
+      telefono: paciente.telefono,
+      fechaNacimiento: paciente.fechaNacimiento
+        ? paciente.fechaNacimiento.toISOString().slice(0, 10)
+        : null,
+      grupoSanguineo: paciente.grupoSanguineo,
       medicoResponsableId,
     });
   }

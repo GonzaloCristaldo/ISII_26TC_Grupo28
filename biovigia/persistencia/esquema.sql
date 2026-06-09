@@ -1,4 +1,4 @@
--- Esquema normalizado para BioVigia, con procedimientos almacenados, y funciones.
+-- Esquema normalizado para BioVigia, con procedimientos almacenados y funciones.
 
 CREATE TABLE roles (
     rol_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -16,24 +16,41 @@ CREATE TABLE tipos_medicion (
     unidad VARCHAR(50) NOT NULL
 );
 
+CREATE TABLE especialidades (
+    especialidad_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    nombre VARCHAR(120) UNIQUE NOT NULL,
+    activa BOOLEAN NOT NULL DEFAULT true,
+    creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE medicos (
     medico_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    nombre_completo VARCHAR(255) NOT NULL,
-    especialidad VARCHAR(255) NOT NULL,
-    numero_licencia VARCHAR(100) UNIQUE NOT NULL
+    especialidad_id UUID NOT NULL,
+    numero_licencia VARCHAR(100) UNIQUE NOT NULL,
+    CONSTRAINT fk_medico_especialidad
+      FOREIGN KEY (especialidad_id) REFERENCES especialidades(especialidad_id)
 );
 
 CREATE TABLE pacientes (
     paciente_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    nombre_completo VARCHAR(255) NOT NULL,
-    contacto VARCHAR(255),
     medico_id UUID NOT NULL,
+    fecha_nacimiento DATE,
+    grupo_sanguineo VARCHAR(3),
     CONSTRAINT fk_paciente_medico
-      FOREIGN KEY (medico_id) REFERENCES medicos(medico_id)
+      FOREIGN KEY (medico_id) REFERENCES medicos(medico_id),
+    CONSTRAINT ck_paciente_grupo_sanguineo
+      CHECK (
+        grupo_sanguineo IS NULL OR
+        grupo_sanguineo IN ('A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-')
+      )
 );
 
 CREATE TABLE usuarios (
     usuario_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    nombre VARCHAR(120) NOT NULL,
+    apellido VARCHAR(120) NOT NULL,
+    email VARCHAR(255),
+    telefono VARCHAR(50),
     username VARCHAR(100) UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
     rol_id UUID NOT NULL,
@@ -46,6 +63,7 @@ CREATE TABLE usuarios (
 CREATE TABLE usuario_medico (
     usuario_id UUID PRIMARY KEY,
     medico_id UUID UNIQUE NOT NULL,
+    fecha_habilitacion TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_usuario_medico_usuario
       FOREIGN KEY (usuario_id) REFERENCES usuarios(usuario_id) ON DELETE CASCADE,
     CONSTRAINT fk_usuario_medico_medico
@@ -55,6 +73,7 @@ CREATE TABLE usuario_medico (
 CREATE TABLE usuario_paciente (
     usuario_id UUID PRIMARY KEY,
     paciente_id UUID UNIQUE NOT NULL,
+    fecha_registro_paciente TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_usuario_paciente_usuario
       FOREIGN KEY (usuario_id) REFERENCES usuarios(usuario_id) ON DELETE CASCADE,
     CONSTRAINT fk_usuario_paciente_paciente
@@ -105,7 +124,6 @@ CREATE TABLE alertas (
 );
 
 -- Funciones y procedimientos almacenados agregados despues de la revision 2.
-
 
 CREATE OR REPLACE FUNCTION fn_obtener_umbral_por_tipo(p_tipo_medicion TEXT)
 RETURNS TABLE (
@@ -248,7 +266,7 @@ AS $$
     a.leido_por_medico,
     a.fecha,
     p.paciente_id,
-    p.nombre_completo::TEXT AS paciente_nombre,
+    btrim(concat_ws(' ', u.nombre, u.apellido))::TEXT AS paciente_nombre,
     tm.nombre::TEXT AS medicion_tipo,
     tm.unidad::TEXT AS medicion_unidad,
     m.valor AS medicion_valor,
@@ -258,6 +276,8 @@ AS $$
   JOIN mediciones m ON a.medicion_id = m.medicion_id
   JOIN tipos_medicion tm ON tm.tipo_medicion_id = m.tipo_medicion_id
   JOIN pacientes p ON m.paciente_id = p.paciente_id
+  JOIN usuario_paciente up ON up.paciente_id = p.paciente_id
+  JOIN usuarios u ON u.usuario_id = up.usuario_id
   WHERE p.medico_id = p_medico_id
     AND a.leido_por_medico = false
   ORDER BY a.fecha DESC;
@@ -292,8 +312,12 @@ $$;
 CREATE OR REPLACE FUNCTION fn_pacientes_asignados_medico(p_medico_id UUID)
 RETURNS TABLE (
   paciente_id UUID,
-  nombre_completo TEXT,
-  contacto TEXT,
+  nombre TEXT,
+  apellido TEXT,
+  email TEXT,
+  telefono TEXT,
+  fecha_nacimiento DATE,
+  grupo_sanguineo TEXT,
   medico_id UUID
 )
 LANGUAGE sql
@@ -301,12 +325,18 @@ STABLE
 AS $$
   SELECT
     p.paciente_id,
-    p.nombre_completo::TEXT AS nombre_completo,
-    p.contacto::TEXT AS contacto,
+    u.nombre::TEXT AS nombre,
+    u.apellido::TEXT AS apellido,
+    u.email::TEXT AS email,
+    u.telefono::TEXT AS telefono,
+    p.fecha_nacimiento,
+    p.grupo_sanguineo::TEXT AS grupo_sanguineo,
     p.medico_id
   FROM pacientes p
+  JOIN usuario_paciente up ON up.paciente_id = p.paciente_id
+  JOIN usuarios u ON u.usuario_id = up.usuario_id
   WHERE p.medico_id = p_medico_id
-  ORDER BY p.nombre_completo ASC;
+  ORDER BY u.apellido ASC, u.nombre ASC;
 $$;
 
 CREATE OR REPLACE FUNCTION fn_historial_mediciones_paciente(p_paciente_id UUID)

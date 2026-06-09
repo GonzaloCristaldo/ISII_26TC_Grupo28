@@ -3,16 +3,27 @@ import { cerrarSesionAccion } from '@/app/auth/accionesAutenticacion';
 import {
   crearGestorAdministracionUsuarios,
   crearGestorConfiguracionClinica,
+  crearGestorEspecialidades,
 } from '@/app/lib/crearDependencias';
 import { requerirAdministrador } from '@/app/lib/session';
+import type { Especialidad } from '@/modelos/tipos';
 import {
   registrarMedicoAdminAccion,
   registrarPacienteAdminAccion,
 } from './accionesAdmin';
 import PanelConfiguracionClinicaAdmin from './PanelConfiguracionClinicaAdmin';
+import PanelEspecialidadesAdmin from './PanelEspecialidadesAdmin';
 import PanelUsuariosAdmin from './PanelUsuariosAdmin';
 
-function campoTexto(label: string, name: string, defaultValue: string, required = true) {
+const GRUPOS_SANGUINEOS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+
+function campoTexto(
+  label: string,
+  name: string,
+  defaultValue: string,
+  required = true,
+  type = 'text',
+) {
   return (
     <label className="block">
       <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
@@ -20,6 +31,7 @@ function campoTexto(label: string, name: string, defaultValue: string, required 
       </span>
       <input
         name={name}
+        type={type}
         defaultValue={defaultValue}
         required={required}
         className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-slate-700"
@@ -28,15 +40,65 @@ function campoTexto(label: string, name: string, defaultValue: string, required 
   );
 }
 
+function selectorGrupoSanguineo(defaultValue = '') {
+  return (
+    <label className="block">
+      <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+        Grupo sanguineo
+      </span>
+      <select
+        name="grupo_sanguineo"
+        defaultValue={defaultValue}
+        className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-slate-700"
+      >
+        <option value="">Sin informar</option>
+        {GRUPOS_SANGUINEOS.map((grupo) => (
+          <option key={grupo} value={grupo}>
+            {grupo}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+function selectorEspecialidad(especialidades: Especialidad[], defaultValue = '') {
+  return (
+    <label className="block">
+      <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+        Especialidad
+      </span>
+      <select
+        name="especialidad_id"
+        defaultValue={defaultValue}
+        required
+        className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-slate-700"
+      >
+        <option value="" disabled>
+          Seleccionar
+        </option>
+        {especialidades.map((especialidad) => (
+          <option key={especialidad.especialidad_id} value={especialidad.especialidad_id}>
+            {especialidad.nombre}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
 export default async function AdminPage() {
   const sesion = await requerirAdministrador();
   const gestorUsuarios = crearGestorAdministracionUsuarios();
   const gestorConfiguracion = crearGestorConfiguracionClinica();
-  const [usuarios, medicos, tiposMedicion] = await Promise.all([
+  const gestorEspecialidades = crearGestorEspecialidades();
+  const [usuarios, medicos, tiposMedicion, especialidades] = await Promise.all([
     gestorUsuarios.listarUsuarios(),
     gestorUsuarios.listarMedicosRegistrables(),
     gestorConfiguracion.listarTiposMedicionConUmbral(),
+    gestorEspecialidades.listar(),
   ]);
+  const especialidadesActivas = especialidades.filter((especialidad) => especialidad.activa);
   const medicosActivos = usuarios.filter(
     (usuario) => usuario.rol === 'medico' && usuario.activo,
   ).length;
@@ -104,30 +166,39 @@ export default async function AdminPage() {
         <section className="grid gap-6 lg:grid-cols-2">
           <article className="rounded-lg border border-slate-300 bg-white p-5">
             <h2 className="text-xl font-semibold text-slate-950">Registrar medico</h2>
-            <form action={registrarMedicoAdminAccion} className="mt-4 grid gap-3 md:grid-cols-2">
-              {campoTexto('Nombre completo', 'nombre_completo', '')}
-              {campoTexto('Especialidad', 'especialidad', '')}
-              {campoTexto('Numero licencia', 'numero_licencia', '')}
-              {campoTexto('Usuario', 'username', '')}
-              <label className="block md:col-span-2">
-                <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                  Clave inicial
-                </span>
-                <input
-                  name="password"
-                  type="password"
-                  minLength={8}
-                  required
-                  className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-slate-700"
-                />
-              </label>
-              <button
-                type="submit"
-                className="rounded-lg bg-cyan-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-cyan-800 md:col-span-2"
-              >
-                Crear medico
-              </button>
-            </form>
+            {especialidadesActivas.length === 0 ? (
+              <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                Primero cargue al menos una especialidad.
+              </p>
+            ) : (
+              <form action={registrarMedicoAdminAccion} className="mt-4 grid gap-3 md:grid-cols-2">
+                {campoTexto('Nombre', 'nombre', '')}
+                {campoTexto('Apellido', 'apellido', '')}
+                {campoTexto('Email', 'email', '', false, 'email')}
+                {campoTexto('Telefono', 'telefono', '', false, 'tel')}
+                {selectorEspecialidad(especialidadesActivas)}
+                {campoTexto('Numero licencia', 'numero_licencia', '')}
+                {campoTexto('Usuario', 'username', '')}
+                <label className="block md:col-span-2">
+                  <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                    Clave inicial
+                  </span>
+                  <input
+                    name="password"
+                    type="password"
+                    minLength={8}
+                    required
+                    className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-slate-700"
+                  />
+                </label>
+                <button
+                  type="submit"
+                  className="rounded-lg bg-cyan-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-cyan-800 md:col-span-2"
+                >
+                  Crear medico
+                </button>
+              </form>
+            )}
           </article>
 
           <article className="rounded-lg border border-slate-300 bg-white p-5">
@@ -138,8 +209,12 @@ export default async function AdminPage() {
               </p>
             ) : (
               <form action={registrarPacienteAdminAccion} className="mt-4 grid gap-3 md:grid-cols-2">
-                {campoTexto('Nombre completo', 'nombre_completo', '')}
-                {campoTexto('Contacto', 'contacto', '')}
+                {campoTexto('Nombre', 'nombre', '')}
+                {campoTexto('Apellido', 'apellido', '')}
+                {campoTexto('Email', 'email', '', false, 'email')}
+                {campoTexto('Telefono', 'telefono', '', false, 'tel')}
+                {campoTexto('Fecha nacimiento', 'fecha_nacimiento', '', false, 'date')}
+                {selectorGrupoSanguineo()}
                 <label className="block">
                   <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
                     Medico responsable
@@ -184,9 +259,16 @@ export default async function AdminPage() {
           usuarios={usuarios.map((usuario) => ({
             ...usuario,
             creadoEn: usuario.creadoEn.toISOString(),
+            fechaNacimiento: usuario.fechaNacimiento?.toISOString() ?? null,
           }))}
           medicos={medicos}
+          especialidades={especialidadesActivas.map((especialidad) => ({
+            especialidad_id: especialidad.especialidad_id,
+            nombre: especialidad.nombre,
+          }))}
         />
+
+        <PanelEspecialidadesAdmin especialidades={especialidades} />
 
         <PanelConfiguracionClinicaAdmin tiposMedicion={tiposMedicion} />
       </div>
