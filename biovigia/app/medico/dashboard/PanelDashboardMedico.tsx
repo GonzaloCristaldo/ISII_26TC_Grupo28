@@ -11,6 +11,7 @@ import {
   obtenerAlertasPaciente,
   obtenerClasesEstado,
   obtenerFormatoFecha,
+  obtenerFormatoFechaCorta,
   obtenerHistorialPaciente,
   obtenerMedicionActual,
   obtenerNombreMedicion,
@@ -418,10 +419,7 @@ export default function PanelDashboardMedico({
                               textAnchor="middle"
                               className="fill-slate-500 font-mono text-[3px]"
                             >
-                              {new Intl.DateTimeFormat('es-AR', {
-                                day: '2-digit',
-                                month: '2-digit',
-                              }).format(new Date(punto.medicion.fecha))}
+                              {obtenerFormatoFechaCorta(punto.medicion.fecha)}
                             </text>
                           </g>
                         ))}

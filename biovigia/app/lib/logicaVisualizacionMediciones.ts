@@ -17,6 +17,22 @@ type ConfiguracionGrafico = {
   altoDisponible?: number;
 };
 
+const ZONA_HORARIA_ARGENTINA = 'America/Argentina/Buenos_Aires';
+
+function obtenerPartesFecha(fecha: string) {
+  const partes = new Intl.DateTimeFormat('en-US', {
+    timeZone: ZONA_HORARIA_ARGENTINA,
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(new Date(fecha));
+
+  return Object.fromEntries(partes.map((parte) => [parte.type, parte.value]));
+}
+
 export function obtenerUnidadMedicion(
   tipo: TipoMedicionNombre,
   tiposMedicion: TipoMedicionVisualizable[],
@@ -32,13 +48,21 @@ export function obtenerNombreMedicion(tipo: TipoMedicionNombre) {
 }
 
 export function obtenerFormatoFecha(fecha: string) {
-  return new Intl.DateTimeFormat('es-AR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(fecha));
+  const partes = obtenerPartesFecha(fecha);
+
+  return `${partes.day}/${partes.month}/${partes.year}, ${partes.hour}:${partes.minute}`;
+}
+
+export function obtenerFormatoFechaCorta(fecha: string) {
+  const partes = obtenerPartesFecha(fecha);
+
+  return `${partes.day}/${partes.month}`;
+}
+
+export function obtenerFormatoFechaCalendario(fecha: string) {
+  const coincidencia = /^(\d{4})-(\d{2})-(\d{2})/.exec(fecha);
+
+  return coincidencia ? `${coincidencia[3]}/${coincidencia[2]}/${coincidencia[1]}` : fecha;
 }
 
 export function ordenarMedicionesPorFecha<T extends { fecha: string }>(

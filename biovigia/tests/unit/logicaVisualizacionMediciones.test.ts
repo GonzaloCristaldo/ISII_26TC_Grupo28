@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  obtenerFormatoFecha,
+  obtenerFormatoFechaCalendario,
+  obtenerFormatoFechaCorta,
   obtenerNombreMedicion,
   obtenerPuntosGrafico,
   obtenerUnidadMedicion,
@@ -17,6 +20,12 @@ describe('logicaVisualizacionMediciones', () => {
   it('normaliza nombres de medicion para visualizacion', () => {
     expect(obtenerNombreMedicion('PresionArterial')).toBe('Presion Arterial');
     expect(obtenerNombreMedicion('frecuencia_cardiaca')).toBe('frecuencia cardiaca');
+  });
+
+  it('formatea fechas de forma deterministica para evitar errores de hidratacion', () => {
+    expect(obtenerFormatoFecha('2026-06-10T12:34:00.000Z')).toBe('10/06/2026, 09:34');
+    expect(obtenerFormatoFechaCorta('2026-06-10T12:34:00.000Z')).toBe('10/06');
+    expect(obtenerFormatoFechaCalendario('2026-06-10T00:00:00.000Z')).toBe('10/06/2026');
   });
 
   it('ordena mediciones sin mutar el arreglo original', () => {

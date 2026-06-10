@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { cerrarSesionAccion } from '@/app/auth/accionesAutenticacion';
 import { crearGestorDashboardPaciente } from '@/app/lib/crearDependencias';
+import { obtenerFormatoFechaCalendario } from '@/app/lib/logicaVisualizacionMediciones';
 import { requerirPaciente } from '@/app/lib/session';
 import type { Medicion, PacienteConMedicoResponsable, Umbral } from '@/modelos/tipos';
 import PanelDashboardPaciente from './PanelDashboardPaciente';
@@ -144,9 +145,7 @@ export default async function DashboardPacientePage() {
                 <p className="mt-1 text-xs text-slate-500">
                   {perfil.grupoSanguineo ? `Grupo ${perfil.grupoSanguineo}` : 'Grupo no informado'}
                   {perfil.fechaNacimiento
-                    ? ` - Nacimiento ${new Intl.DateTimeFormat('es-AR').format(
-                        new Date(`${perfil.fechaNacimiento}T00:00:00`),
-                      )}`
+                    ? ` - Nacimiento ${obtenerFormatoFechaCalendario(perfil.fechaNacimiento)}`
                     : ''}
                 </p>
               </div>

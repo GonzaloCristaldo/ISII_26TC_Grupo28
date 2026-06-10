@@ -1,6 +1,7 @@
 import type { TipoEstadoMedicion, TipoMedicionNombre } from '@/modelos/tipos';
 import {
   obtenerFormatoFecha,
+  obtenerFormatoFechaCorta,
   obtenerNombreMedicion,
   obtenerPuntosGrafico,
   obtenerUnidadMedicion,
@@ -17,6 +18,7 @@ import type {
 
 export {
   obtenerFormatoFecha,
+  obtenerFormatoFechaCorta,
   obtenerNombreMedicion,
   obtenerPuntosGrafico,
   obtenerUnidadMedicion,

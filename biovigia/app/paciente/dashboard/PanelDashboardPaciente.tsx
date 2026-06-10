@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { TipoMedicionNombre } from '@/modelos/tipos';
 import {
   obtenerFormatoFecha,
+  obtenerFormatoFechaCorta,
   obtenerNombreMedicion,
   obtenerPuntosGrafico,
   obtenerUnidadMedicion,
@@ -198,10 +199,7 @@ export default function PanelDashboardPaciente({ historial, tiposMedicion }: Pro
                         textAnchor="middle"
                         className="fill-slate-500 font-mono text-[12px]"
                       >
-                        {new Intl.DateTimeFormat('es-AR', {
-                          day: '2-digit',
-                          month: '2-digit',
-                        }).format(new Date(punto.medicion.fecha))}
+                        {obtenerFormatoFechaCorta(punto.medicion.fecha)}
                       </text>
                     </g>
                   ))}
