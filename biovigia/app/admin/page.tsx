@@ -12,6 +12,7 @@ import {
   registrarPacienteAdminAccion,
 } from './accionesAdmin';
 import PanelConfiguracionClinicaAdmin from './PanelConfiguracionClinicaAdmin';
+import PanelDesplegableAdmin from './PanelDesplegableAdmin';
 import PanelEspecialidadesAdmin from './PanelEspecialidadesAdmin';
 import PanelUsuariosAdmin from './PanelUsuariosAdmin';
 
@@ -164,14 +165,13 @@ export default async function AdminPage() {
         </section>
 
         <section className="grid gap-6 lg:grid-cols-2">
-          <article className="rounded-lg border border-slate-300 bg-white p-5">
-            <h2 className="text-xl font-semibold text-slate-950">Registrar medico</h2>
+          <PanelDesplegableAdmin titulo="Registrar medico">
             {especialidadesActivas.length === 0 ? (
-              <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
                 Primero cargue al menos una especialidad.
               </p>
             ) : (
-              <form action={registrarMedicoAdminAccion} className="mt-4 grid gap-3 md:grid-cols-2">
+              <form action={registrarMedicoAdminAccion} className="grid gap-3 md:grid-cols-2">
                 {campoTexto('Nombre', 'nombre', '')}
                 {campoTexto('Apellido', 'apellido', '')}
                 {campoTexto('Email', 'email', '', false, 'email')}
@@ -199,16 +199,15 @@ export default async function AdminPage() {
                 </button>
               </form>
             )}
-          </article>
+          </PanelDesplegableAdmin>
 
-          <article className="rounded-lg border border-slate-300 bg-white p-5">
-            <h2 className="text-xl font-semibold text-slate-950">Registrar paciente</h2>
+          <PanelDesplegableAdmin titulo="Registrar paciente">
             {medicos.length === 0 ? (
-              <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
                 Debe existir al menos un medico activo para asignar pacientes.
               </p>
             ) : (
-              <form action={registrarPacienteAdminAccion} className="mt-4 grid gap-3 md:grid-cols-2">
+              <form action={registrarPacienteAdminAccion} className="grid gap-3 md:grid-cols-2">
                 {campoTexto('Nombre', 'nombre', '')}
                 {campoTexto('Apellido', 'apellido', '')}
                 {campoTexto('Email', 'email', '', false, 'email')}
@@ -252,7 +251,7 @@ export default async function AdminPage() {
                 </button>
               </form>
             )}
-          </article>
+          </PanelDesplegableAdmin>
         </section>
 
         <PanelUsuariosAdmin

@@ -1,5 +1,6 @@
 import type { Especialidad } from '@/modelos/tipos';
 import { crearEspecialidadAdminAccion } from './accionesAdmin';
+import PanelDesplegableAdmin from './PanelDesplegableAdmin';
 
 export default function PanelEspecialidadesAdmin({
   especialidades,
@@ -15,9 +16,8 @@ export default function PanelEspecialidadesAdmin({
         </p>
       </div>
 
-      <article className="rounded-lg border border-slate-300 bg-white p-5">
-        <h3 className="text-xl font-semibold text-slate-950">Nueva especialidad</h3>
-        <form action={crearEspecialidadAdminAccion} className="mt-4 grid gap-3 md:grid-cols-[1fr_auto]">
+      <PanelDesplegableAdmin titulo="Nueva especialidad">
+        <form action={crearEspecialidadAdminAccion} className="grid gap-3 md:grid-cols-[1fr_auto]">
           <label className="block">
             <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
               Nombre
@@ -35,9 +35,9 @@ export default function PanelEspecialidadesAdmin({
             Crear especialidad
           </button>
         </form>
-      </article>
+      </PanelDesplegableAdmin>
 
-      <div className="rounded-lg border border-slate-300 bg-white p-5">
+      <PanelDesplegableAdmin titulo="Especialidades cargadas" meta={String(especialidades.length)}>
         {especialidades.length === 0 ? (
           <p className="rounded-lg border border-dashed border-slate-300 px-4 py-8 text-center text-sm text-slate-500">
             No hay especialidades cargadas.
@@ -54,7 +54,7 @@ export default function PanelEspecialidadesAdmin({
             ))}
           </div>
         )}
-      </div>
+      </PanelDesplegableAdmin>
     </section>
   );
 }

@@ -8,6 +8,7 @@ import {
   actualizarPacienteAdminAccion,
   cambiarEstadoUsuarioAdminAccion,
 } from './accionesAdmin';
+import PanelDesplegableAdmin from './PanelDesplegableAdmin';
 
 type UsuarioAdministrableVista = Omit<UsuarioAdministrable, 'creadoEn' | 'fechaNacimiento'> & {
   creadoEn: string;
@@ -237,21 +238,30 @@ function ListaUsuarios({
   const hasta = Math.min(pagina * USUARIOS_POR_PAGINA, totalResultados);
 
   return (
-    <div className="rounded-lg border border-slate-300 bg-white">
-      <div className="border-b border-slate-200 p-4">
-        <div className="flex items-end justify-between gap-3">
-          <div>
-            <h3 className="text-lg font-semibold text-slate-950">{titulo}</h3>
-            <p className="mt-1 text-sm text-slate-500">{subtitulo}</p>
-          </div>
-          <p className="font-mono text-sm text-slate-500">{totalResultados}</p>
+    <details className="group self-start rounded-lg border border-slate-300 bg-white">
+      <summary className="flex cursor-pointer list-none items-start justify-between gap-4 px-4 py-4 transition hover:bg-slate-50 [&::-webkit-details-marker]:hidden">
+        <div className="min-w-0">
+          <h3 className="text-lg font-semibold text-slate-950">{titulo}</h3>
+          <p className="mt-1 text-sm text-slate-500">{subtitulo}</p>
         </div>
+        <div className="flex shrink-0 items-center gap-3">
+          <p className="font-mono text-sm text-slate-500">{totalResultados}</p>
+          <span
+            aria-hidden="true"
+            className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-300 text-sm font-semibold text-slate-500 transition group-open:rotate-90"
+          >
+            &gt;
+          </span>
+        </div>
+      </summary>
+
+      <div className="border-t border-slate-200 p-4">
         <input
           type="search"
           value={busqueda}
           onChange={(event) => onBuscar(event.target.value)}
           placeholder="Buscar por nombre, usuario o dato asociado"
-          className="mt-4 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-700"
+          className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-700"
         />
         <div className="mt-3 flex flex-wrap items-center gap-2">
           {([
@@ -364,7 +374,7 @@ function ListaUsuarios({
           Siguiente
         </button>
       </div>
-    </div>
+    </details>
   );
 }
 
@@ -457,11 +467,8 @@ export default function PanelUsuariosAdmin({ usuarios, medicos, especialidades }
       </div>
 
       {administradores.length > 0 ? (
-        <div className="rounded-lg border border-slate-300 bg-white p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-            Administradores
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
+        <PanelDesplegableAdmin titulo="Administradores" meta={String(administradores.length)}>
+          <div className="flex flex-wrap gap-2">
             {administradores.map((usuario) => (
               <span
                 key={usuario.usuarioId}
@@ -471,7 +478,7 @@ export default function PanelUsuariosAdmin({ usuarios, medicos, especialidades }
               </span>
             ))}
           </div>
-        </div>
+        </PanelDesplegableAdmin>
       ) : null}
 
       <div className="grid gap-6 xl:grid-cols-2">

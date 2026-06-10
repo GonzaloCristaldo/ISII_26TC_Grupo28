@@ -6,6 +6,7 @@ import {
   actualizarTipoMedicionAdminAccion,
   crearTipoMedicionAdminAccion,
 } from './accionesAdmin';
+import PanelDesplegableAdmin from './PanelDesplegableAdmin';
 
 type ValoresUmbral = {
   nombre: string;
@@ -189,7 +190,7 @@ function FormularioTipoMedicion({
         const accion = esEdicion ? 'guardar este umbral' : 'crear este tipo de medicion';
         if (!window.confirm(`Confirma ${accion}?`)) event.preventDefault();
       }}
-      className={`mt-4 grid gap-3 ${esEdicion ? 'md:grid-cols-2' : 'md:grid-cols-5'}`}
+      className={`grid gap-3 ${esEdicion ? 'md:grid-cols-2' : 'md:grid-cols-5'}`}
     >
       {tipo ? <input type="hidden" name="tipo_medicion_id" value={tipo.tipo_medicion_id} /> : null}
       <CampoTexto label="Nombre" name="nombre" value={valores.nombre} onChange={actualizarValor} />
@@ -243,10 +244,9 @@ export default function PanelConfiguracionClinicaAdmin({
         </p>
       </div>
 
-      <article className="rounded-lg border border-slate-300 bg-white p-5">
-        <h3 className="text-xl font-semibold text-slate-950">Nuevo tipo de medicion</h3>
+      <PanelDesplegableAdmin titulo="Nuevo tipo de medicion">
         <FormularioTipoMedicion modo="crear" />
-      </article>
+      </PanelDesplegableAdmin>
 
       <div className="grid gap-4 xl:grid-cols-2">
         {tiposMedicion.length === 0 ? (
@@ -255,10 +255,13 @@ export default function PanelConfiguracionClinicaAdmin({
           </p>
         ) : (
           tiposMedicion.map((tipo) => (
-            <article key={tipo.tipo_medicion_id} className="rounded-lg border border-slate-300 bg-white p-5">
-              <h3 className="text-xl font-semibold text-slate-950">{tipo.nombre}</h3>
+            <PanelDesplegableAdmin
+              key={tipo.tipo_medicion_id}
+              titulo={tipo.nombre}
+              meta={tipo.unidad}
+            >
               <FormularioTipoMedicion tipo={tipo} modo="editar" />
-            </article>
+            </PanelDesplegableAdmin>
           ))
         )}
       </div>
