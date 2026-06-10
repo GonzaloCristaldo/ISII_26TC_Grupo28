@@ -515,7 +515,7 @@ export default function PanelUsuariosAdmin({ usuarios, medicos, especialidades }
             }
             detalleSeleccionado={
               medicoSeleccionado?.medicoId ? (
-                <div>
+                <div key={medicoSeleccionado.usuarioId}>
                   <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 pb-4">
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
@@ -624,7 +624,7 @@ export default function PanelUsuariosAdmin({ usuarios, medicos, especialidades }
             }
             detalleSeleccionado={
               pacienteSeleccionado?.pacienteId ? (
-                <div>
+                <div key={pacienteSeleccionado.usuarioId}>
                   <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 pb-4">
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
