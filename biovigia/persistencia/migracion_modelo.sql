@@ -132,7 +132,11 @@ ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS email VARCHAR(255);
 ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS telefono VARCHAR(50);
 ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS fecha_nacimiento DATE;
 ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS grupo_sanguineo VARCHAR(3);
+ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS usuario_id UUID;
+ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS fecha_registro_paciente TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE medicos ADD COLUMN IF NOT EXISTS usuario_id UUID;
 ALTER TABLE medicos ADD COLUMN IF NOT EXISTS especialidad_id UUID;
+ALTER TABLE medicos ADD COLUMN IF NOT EXISTS fecha_habilitacion TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
 
 DO $$
 BEGIN
@@ -173,51 +177,25 @@ BEGIN
   END IF;
 END $$;
 
-CREATE TABLE IF NOT EXISTS usuario_medico (
-    usuario_id UUID PRIMARY KEY,
-    medico_id UUID UNIQUE NOT NULL,
-    fecha_habilitacion TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_usuario_medico_usuario
-      FOREIGN KEY (usuario_id) REFERENCES usuarios(usuario_id) ON DELETE CASCADE,
-    CONSTRAINT fk_usuario_medico_medico
-      FOREIGN KEY (medico_id) REFERENCES medicos(medico_id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS usuario_paciente (
-    usuario_id UUID PRIMARY KEY,
-    paciente_id UUID UNIQUE NOT NULL,
-    fecha_registro_paciente TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_usuario_paciente_usuario
-      FOREIGN KEY (usuario_id) REFERENCES usuarios(usuario_id) ON DELETE CASCADE,
-    CONSTRAINT fk_usuario_paciente_paciente
-      FOREIGN KEY (paciente_id) REFERENCES pacientes(paciente_id) ON DELETE CASCADE
-);
-
-ALTER TABLE usuario_medico
-  ADD COLUMN IF NOT EXISTS fecha_habilitacion TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP;
-
-ALTER TABLE usuario_paciente
-  ADD COLUMN IF NOT EXISTS fecha_registro_paciente TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP;
-
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'usuarios' AND column_name = 'medico_id') THEN
     EXECUTE '
-      INSERT INTO usuario_medico (usuario_id, medico_id)
-      SELECT usuario_id, medico_id
-      FROM usuarios
-      WHERE medico_id IS NOT NULL
-      ON CONFLICT (usuario_id) DO NOTHING
+      UPDATE medicos m
+      SET usuario_id = u.usuario_id
+      FROM usuarios u
+      WHERE u.medico_id = m.medico_id
+        AND m.usuario_id IS NULL
     ';
   END IF;
 
   IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'usuarios' AND column_name = 'paciente_id') THEN
     EXECUTE '
-      INSERT INTO usuario_paciente (usuario_id, paciente_id)
-      SELECT usuario_id, paciente_id
-      FROM usuarios
-      WHERE paciente_id IS NOT NULL
-      ON CONFLICT (usuario_id) DO NOTHING
+      UPDATE pacientes p
+      SET usuario_id = u.usuario_id
+      FROM usuarios u
+      WHERE u.paciente_id = p.paciente_id
+        AND p.usuario_id IS NULL
     ';
   END IF;
 END $$;
@@ -242,9 +220,8 @@ BEGIN
             NULLIF(btrim(substr(m.%1$I, length(split_part(m.%1$I, '' '', 1)) + 2)), ''''),
             ''''
           )
-        FROM usuario_medico um
-        JOIN medicos m ON m.medico_id = um.medico_id
-        WHERE u.usuario_id = um.usuario_id
+        FROM medicos m
+        WHERE u.usuario_id = m.usuario_id
           AND (u.nombre IS NULL OR u.apellido IS NULL)
       ',
       v_nombre_col
@@ -266,9 +243,8 @@ BEGIN
             NULLIF(btrim(substr(p.%1$I, length(split_part(p.%1$I, '' '', 1)) + 2)), ''''),
             ''''
           )
-        FROM usuario_paciente up
-        JOIN pacientes p ON p.paciente_id = up.paciente_id
-        WHERE u.usuario_id = up.usuario_id
+        FROM pacientes p
+        WHERE u.usuario_id = p.usuario_id
           AND (u.nombre IS NULL OR u.apellido IS NULL)
       ',
       v_nombre_col
@@ -293,9 +269,8 @@ BEGIN
             WHEN p.%1$I IS NOT NULL AND p.%1$I !~ ''^[^@]+@[^@]+\.[^@]+$'' THEN p.%1$I
             ELSE u.telefono
           END
-        FROM usuario_paciente up
-        JOIN pacientes p ON p.paciente_id = up.paciente_id
-        WHERE u.usuario_id = up.usuario_id
+        FROM pacientes p
+        WHERE u.usuario_id = p.usuario_id
       ',
       v_dato_col
     );
@@ -309,17 +284,17 @@ SET
   email = NULLIF(email, ''),
   telefono = NULLIF(telefono, '');
 
-UPDATE usuario_medico um
+UPDATE medicos m
 SET fecha_habilitacion = COALESCE(u.creado_en, CURRENT_TIMESTAMP)
 FROM usuarios u
-WHERE u.usuario_id = um.usuario_id
-  AND um.fecha_habilitacion IS NULL;
+WHERE u.usuario_id = m.usuario_id
+  AND m.fecha_habilitacion IS NULL;
 
-UPDATE usuario_paciente up
+UPDATE pacientes p
 SET fecha_registro_paciente = COALESCE(u.creado_en, CURRENT_TIMESTAMP)
 FROM usuarios u
-WHERE u.usuario_id = up.usuario_id
-  AND up.fecha_registro_paciente IS NULL;
+WHERE u.usuario_id = p.usuario_id
+  AND p.fecha_registro_paciente IS NULL;
 
 ALTER TABLE usuarios
   ALTER COLUMN nombre SET NOT NULL;
@@ -400,6 +375,44 @@ ALTER TABLE usuarios
 
 ALTER TABLE usuarios
   ALTER COLUMN activo SET DEFAULT true;
+
+ALTER TABLE medicos
+  ALTER COLUMN usuario_id SET NOT NULL;
+
+ALTER TABLE medicos
+  ALTER COLUMN fecha_habilitacion SET DEFAULT CURRENT_TIMESTAMP;
+
+ALTER TABLE medicos
+  ALTER COLUMN fecha_habilitacion SET NOT NULL;
+
+ALTER TABLE pacientes
+  ALTER COLUMN usuario_id SET NOT NULL;
+
+ALTER TABLE pacientes
+  ALTER COLUMN fecha_registro_paciente SET DEFAULT CURRENT_TIMESTAMP;
+
+ALTER TABLE pacientes
+  ALTER COLUMN fecha_registro_paciente SET NOT NULL;
+
+ALTER TABLE medicos DROP CONSTRAINT IF EXISTS medicos_usuario_id_key;
+ALTER TABLE medicos DROP CONSTRAINT IF EXISTS uq_medico_usuario;
+ALTER TABLE medicos
+  ADD CONSTRAINT uq_medico_usuario UNIQUE (usuario_id);
+
+ALTER TABLE pacientes DROP CONSTRAINT IF EXISTS pacientes_usuario_id_key;
+ALTER TABLE pacientes DROP CONSTRAINT IF EXISTS uq_paciente_usuario;
+ALTER TABLE pacientes
+  ADD CONSTRAINT uq_paciente_usuario UNIQUE (usuario_id);
+
+ALTER TABLE medicos DROP CONSTRAINT IF EXISTS fk_medico_usuario;
+ALTER TABLE medicos
+  ADD CONSTRAINT fk_medico_usuario
+  FOREIGN KEY (usuario_id) REFERENCES usuarios(usuario_id);
+
+ALTER TABLE pacientes DROP CONSTRAINT IF EXISTS fk_paciente_usuario;
+ALTER TABLE pacientes
+  ADD CONSTRAINT fk_paciente_usuario
+  FOREIGN KEY (usuario_id) REFERENCES usuarios(usuario_id);
 
 ALTER TABLE mediciones DROP CONSTRAINT IF EXISTS fk_medicion_tipo_migrado;
 ALTER TABLE mediciones

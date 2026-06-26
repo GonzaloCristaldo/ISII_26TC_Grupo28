@@ -24,23 +24,6 @@ INSERT INTO especialidades (especialidad_id, nombre) VALUES
   ('7a79dc59-654c-4410-8f56-18ec656f691f', 'Pediatria')
 ON CONFLICT (nombre) DO NOTHING;
 
-INSERT INTO medicos (medico_id, especialidad_id, numero_licencia)
-VALUES (
-  '3d5a4435-0275-430c-99e2-ab001ac0aa3f',
-  'bb6e2dbd-c0f9-4b0b-a131-857f1f63c5c5',
-  'MN-1001'
-)
-ON CONFLICT DO NOTHING;
-
-INSERT INTO pacientes (paciente_id, medico_id, fecha_nacimiento, grupo_sanguineo)
-VALUES (
-  'e5b87140-5712-4c2f-b4de-1a221f00a581',
-  '3d5a4435-0275-430c-99e2-ab001ac0aa3f',
-  NULL,
-  NULL
-)
-ON CONFLICT DO NOTHING;
-
 INSERT INTO usuarios (usuario_id, nombre, apellido, email, telefono, username, password_hash, rol_id)
 VALUES (
   '61bbfb11-4045-4d49-873b-54401a5d1349',
@@ -80,19 +63,24 @@ VALUES (
 )
 ON CONFLICT (username) DO NOTHING;
 
-INSERT INTO usuario_medico (usuario_id, medico_id)
+INSERT INTO medicos (medico_id, usuario_id, especialidad_id, numero_licencia)
 VALUES (
+  '3d5a4435-0275-430c-99e2-ab001ac0aa3f',
   'f2fdb3d8-4f6d-481e-b08a-76f858d1f2f7',
-  '3d5a4435-0275-430c-99e2-ab001ac0aa3f'
+  'bb6e2dbd-c0f9-4b0b-a131-857f1f63c5c5',
+  'MN-1001'
 )
-ON CONFLICT (usuario_id) DO NOTHING;
+ON CONFLICT DO NOTHING;
 
-INSERT INTO usuario_paciente (usuario_id, paciente_id)
+INSERT INTO pacientes (paciente_id, usuario_id, medico_id, fecha_nacimiento, grupo_sanguineo)
 VALUES (
+  'e5b87140-5712-4c2f-b4de-1a221f00a581',
   '7ef9f957-b4a0-4dd4-9f6f-2d689d8ef2d5',
-  'e5b87140-5712-4c2f-b4de-1a221f00a581'
+  '3d5a4435-0275-430c-99e2-ab001ac0aa3f',
+  NULL,
+  NULL
 )
-ON CONFLICT (usuario_id) DO NOTHING;
+ON CONFLICT DO NOTHING;
 
 INSERT INTO umbrales (tipo_medicion_id, valor_minimo_normal, valor_maximo_normal, valor_critico)
 VALUES

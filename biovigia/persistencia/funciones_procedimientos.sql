@@ -151,8 +151,7 @@ AS $$
   JOIN mediciones m ON a.medicion_id = m.medicion_id
   JOIN tipos_medicion tm ON tm.tipo_medicion_id = m.tipo_medicion_id
   JOIN pacientes p ON m.paciente_id = p.paciente_id
-  JOIN usuario_paciente up ON up.paciente_id = p.paciente_id
-  JOIN usuarios u ON u.usuario_id = up.usuario_id
+  JOIN usuarios u ON u.usuario_id = p.usuario_id
   WHERE p.medico_id = p_medico_id
     AND a.leido_por_medico = false
   ORDER BY a.fecha DESC;
@@ -208,8 +207,7 @@ AS $$
     p.grupo_sanguineo::TEXT AS grupo_sanguineo,
     p.medico_id
   FROM pacientes p
-  JOIN usuario_paciente up ON up.paciente_id = p.paciente_id
-  JOIN usuarios u ON u.usuario_id = up.usuario_id
+  JOIN usuarios u ON u.usuario_id = p.usuario_id
   WHERE p.medico_id = p_medico_id
   ORDER BY u.apellido ASC, u.nombre ASC;
 $$;

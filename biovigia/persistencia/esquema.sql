@@ -23,28 +23,6 @@ CREATE TABLE especialidades (
     creado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE medicos (
-    medico_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    especialidad_id UUID NOT NULL,
-    numero_licencia VARCHAR(100) UNIQUE NOT NULL,
-    CONSTRAINT fk_medico_especialidad
-      FOREIGN KEY (especialidad_id) REFERENCES especialidades(especialidad_id)
-);
-
-CREATE TABLE pacientes (
-    paciente_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    medico_id UUID NOT NULL,
-    fecha_nacimiento DATE,
-    grupo_sanguineo VARCHAR(3),
-    CONSTRAINT fk_paciente_medico
-      FOREIGN KEY (medico_id) REFERENCES medicos(medico_id),
-    CONSTRAINT ck_paciente_grupo_sanguineo
-      CHECK (
-        grupo_sanguineo IS NULL OR
-        grupo_sanguineo IN ('A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-')
-      )
-);
-
 CREATE TABLE usuarios (
     usuario_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     nombre VARCHAR(120) NOT NULL,
@@ -60,24 +38,34 @@ CREATE TABLE usuarios (
       FOREIGN KEY (rol_id) REFERENCES roles(rol_id)
 );
 
-CREATE TABLE usuario_medico (
-    usuario_id UUID PRIMARY KEY,
-    medico_id UUID UNIQUE NOT NULL,
+CREATE TABLE medicos (
+    medico_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    usuario_id UUID UNIQUE NOT NULL,
+    especialidad_id UUID NOT NULL,
+    numero_licencia VARCHAR(100) UNIQUE NOT NULL,
     fecha_habilitacion TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_usuario_medico_usuario
-      FOREIGN KEY (usuario_id) REFERENCES usuarios(usuario_id) ON DELETE CASCADE,
-    CONSTRAINT fk_usuario_medico_medico
-      FOREIGN KEY (medico_id) REFERENCES medicos(medico_id) ON DELETE CASCADE
+    CONSTRAINT fk_medico_usuario
+      FOREIGN KEY (usuario_id) REFERENCES usuarios(usuario_id),
+    CONSTRAINT fk_medico_especialidad
+      FOREIGN KEY (especialidad_id) REFERENCES especialidades(especialidad_id)
 );
 
-CREATE TABLE usuario_paciente (
-    usuario_id UUID PRIMARY KEY,
-    paciente_id UUID UNIQUE NOT NULL,
+CREATE TABLE pacientes (
+    paciente_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    usuario_id UUID UNIQUE NOT NULL,
+    medico_id UUID NOT NULL,
+    fecha_nacimiento DATE,
+    grupo_sanguineo VARCHAR(3),
     fecha_registro_paciente TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_usuario_paciente_usuario
-      FOREIGN KEY (usuario_id) REFERENCES usuarios(usuario_id) ON DELETE CASCADE,
-    CONSTRAINT fk_usuario_paciente_paciente
-      FOREIGN KEY (paciente_id) REFERENCES pacientes(paciente_id) ON DELETE CASCADE
+    CONSTRAINT fk_paciente_usuario
+      FOREIGN KEY (usuario_id) REFERENCES usuarios(usuario_id),
+    CONSTRAINT fk_paciente_medico
+      FOREIGN KEY (medico_id) REFERENCES medicos(medico_id),
+    CONSTRAINT ck_paciente_grupo_sanguineo
+      CHECK (
+        grupo_sanguineo IS NULL OR
+        grupo_sanguineo IN ('A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-')
+      )
 );
 
 CREATE TABLE umbrales (
@@ -276,8 +264,7 @@ AS $$
   JOIN mediciones m ON a.medicion_id = m.medicion_id
   JOIN tipos_medicion tm ON tm.tipo_medicion_id = m.tipo_medicion_id
   JOIN pacientes p ON m.paciente_id = p.paciente_id
-  JOIN usuario_paciente up ON up.paciente_id = p.paciente_id
-  JOIN usuarios u ON u.usuario_id = up.usuario_id
+  JOIN usuarios u ON u.usuario_id = p.usuario_id
   WHERE p.medico_id = p_medico_id
     AND a.leido_por_medico = false
   ORDER BY a.fecha DESC;
@@ -333,8 +320,7 @@ AS $$
     p.grupo_sanguineo::TEXT AS grupo_sanguineo,
     p.medico_id
   FROM pacientes p
-  JOIN usuario_paciente up ON up.paciente_id = p.paciente_id
-  JOIN usuarios u ON u.usuario_id = up.usuario_id
+  JOIN usuarios u ON u.usuario_id = p.usuario_id
   WHERE p.medico_id = p_medico_id
   ORDER BY u.apellido ASC, u.nombre ASC;
 $$;

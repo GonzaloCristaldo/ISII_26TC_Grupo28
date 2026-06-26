@@ -64,12 +64,12 @@ const QUERY_USUARIO = `
     u.password_hash,
     r.nombre AS rol,
     u.activo,
-    um.medico_id,
-    up.paciente_id
+    m.medico_id,
+    p.paciente_id
   FROM usuarios u
   JOIN roles r ON r.rol_id = u.rol_id
-  LEFT JOIN usuario_medico um ON um.usuario_id = u.usuario_id
-  LEFT JOIN usuario_paciente up ON up.usuario_id = u.usuario_id
+  LEFT JOIN medicos m ON m.usuario_id = u.usuario_id
+  LEFT JOIN pacientes p ON p.usuario_id = u.usuario_id
 `;
 
 async function buscarUsuarioPorId(client: PoolClient, usuarioId: string) {
@@ -123,8 +123,7 @@ export class PostgresUsuariosAuthRepo implements RepositorioUsuariosAuth {
         e.nombre AS especialidad
       FROM medicos m
       JOIN especialidades e ON e.especialidad_id = m.especialidad_id
-      JOIN usuario_medico um ON um.medico_id = m.medico_id
-      JOIN usuarios u ON u.usuario_id = um.usuario_id
+      JOIN usuarios u ON u.usuario_id = m.usuario_id
       WHERE u.activo = true
         AND e.activa = true
       ORDER BY u.apellido ASC, u.nombre ASC
@@ -149,21 +148,6 @@ export class PostgresUsuariosAuthRepo implements RepositorioUsuariosAuth {
 
     try {
       await client.query('BEGIN');
-
-      const medicoResultado = await client.query<{ medico_id: string }>(
-        `
-          INSERT INTO medicos (especialidad_id, numero_licencia)
-          VALUES ($1, $2)
-          RETURNING medico_id
-        `,
-        [datos.especialidadId, datos.numeroLicencia],
-      );
-
-      const medicoId = medicoResultado.rows[0]?.medico_id;
-
-      if (!medicoId) {
-        throw new Error('No se pudo crear el medico.');
-      }
 
       const rolId = await obtenerRolId(client, 'medico');
 
@@ -198,13 +182,20 @@ export class PostgresUsuariosAuthRepo implements RepositorioUsuariosAuth {
         throw new Error('No se pudo crear el usuario.');
       }
 
-      await client.query(
+      const medicoResultado = await client.query<{ medico_id: string }>(
         `
-          INSERT INTO usuario_medico (usuario_id, medico_id)
-          VALUES ($1, $2)
+          INSERT INTO medicos (usuario_id, especialidad_id, numero_licencia)
+          VALUES ($1, $2, $3)
+          RETURNING medico_id
         `,
-        [usuarioId, medicoId],
+        [usuarioId, datos.especialidadId, datos.numeroLicencia],
       );
+
+      const medicoId = medicoResultado.rows[0]?.medico_id;
+
+      if (!medicoId) {
+        throw new Error('No se pudo crear el medico.');
+      }
 
       await client.query('COMMIT');
 
@@ -222,25 +213,6 @@ export class PostgresUsuariosAuthRepo implements RepositorioUsuariosAuth {
 
     try {
       await client.query('BEGIN');
-
-      const pacienteResultado = await client.query<{ paciente_id: string }>(
-        `
-          INSERT INTO pacientes (
-            medico_id,
-            fecha_nacimiento,
-            grupo_sanguineo
-          )
-          VALUES ($1, $2, $3)
-          RETURNING paciente_id
-        `,
-        [datos.medicoResponsableId, datos.fechaNacimiento, datos.grupoSanguineo],
-      );
-
-      const pacienteId = pacienteResultado.rows[0]?.paciente_id;
-
-      if (!pacienteId) {
-        throw new Error('No se pudo crear el paciente.');
-      }
 
       const rolId = await obtenerRolId(client, 'paciente');
 
@@ -275,13 +247,25 @@ export class PostgresUsuariosAuthRepo implements RepositorioUsuariosAuth {
         throw new Error('No se pudo crear el usuario.');
       }
 
-      await client.query(
+      const pacienteResultado = await client.query<{ paciente_id: string }>(
         `
-          INSERT INTO usuario_paciente (usuario_id, paciente_id)
-          VALUES ($1, $2)
+          INSERT INTO pacientes (
+            usuario_id,
+            medico_id,
+            fecha_nacimiento,
+            grupo_sanguineo
+          )
+          VALUES ($1, $2, $3, $4)
+          RETURNING paciente_id
         `,
-        [usuarioId, pacienteId],
+        [usuarioId, datos.medicoResponsableId, datos.fechaNacimiento, datos.grupoSanguineo],
       );
+
+      const pacienteId = pacienteResultado.rows[0]?.paciente_id;
+
+      if (!pacienteId) {
+        throw new Error('No se pudo crear el paciente.');
+      }
 
       await client.query('COMMIT');
 

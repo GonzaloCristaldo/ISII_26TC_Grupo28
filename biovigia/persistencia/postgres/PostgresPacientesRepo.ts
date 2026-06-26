@@ -84,12 +84,10 @@ export class PostgresPacientesRepo implements RepositorioPacientes {
         e.nombre AS medico_especialidad,
         m.numero_licencia AS medico_numero_licencia
       FROM pacientes p
-      JOIN usuario_paciente up ON up.paciente_id = p.paciente_id
-      JOIN usuarios u ON u.usuario_id = up.usuario_id
+      JOIN usuarios u ON u.usuario_id = p.usuario_id
       JOIN medicos m ON m.medico_id = p.medico_id
       JOIN especialidades e ON e.especialidad_id = m.especialidad_id
-      JOIN usuario_medico um ON um.medico_id = m.medico_id
-      JOIN usuarios mu ON mu.usuario_id = um.usuario_id
+      JOIN usuarios mu ON mu.usuario_id = m.usuario_id
       WHERE p.paciente_id = $1
     `;
 
